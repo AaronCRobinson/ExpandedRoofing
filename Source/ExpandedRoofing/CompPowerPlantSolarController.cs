@@ -8,6 +8,8 @@ namespace ExpandedRoofing
 {
     internal class CompPowerPlantSolarController : CompPowerPlant, ICellBoolGiver
     {
+        private const float maxWattagePerSolarPanel = 50f;
+
         public int RoofCount = 0;
 
         public bool collision = false;
@@ -22,7 +24,7 @@ namespace ExpandedRoofing
         {
             get
             {
-                return Mathf.Lerp(0f, 50f, this.parent.Map.skyManager.CurSkyGlow) * (float)this.RoofCount;
+                return Mathf.Lerp(0f, maxWattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * (float)this.RoofCount;
             }
         }
 
