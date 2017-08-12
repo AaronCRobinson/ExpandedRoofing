@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <ThingDef Name="TempRoof" Abstract="True">
+    <thingClass>Building</thingClass>
+    <category>Building</category>
+    <soundImpactDefault>BulletImpactMetal</soundImpactDefault>
+    <graphicData>
+      <graphicClass>Graphic_Single</graphicClass>
+      <texPath>Things/Mote/TempRoof</texPath>
+      <shaderType>MetaOverlay</shaderType>
+      <damageData>
+        <!--  no damage marks -->
+        <enabled>false</enabled>
+      </damageData>
+    </graphicData>
+	<uiIconPath>UI/Designators/BuildRoofAreaExpand</uiIconPath>
+	<blueprintGraphicData>
+      <graphicClass>Graphic_Single</graphicClass>
+      <texPath>Things/Special/TerrainBlueprint</texPath>
+      <shaderType>MetaOverlay</shaderType>
+    </blueprintGraphicData>
+	<leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+    <altitudeLayer>BuildingOnTop</altitudeLayer>
+    <passability>Standable</passability>
+    <blockWind>true</blockWind>
+    <castEdgeShadows>true</castEdgeShadows>
+    <fillPercent>0</fillPercent>
+    <coversFloor>false</coversFloor>
+    <placingDraggableDimensions>2</placingDraggableDimensions>
+    <tickerType>Normal</tickerType>
+    <rotatable>false</rotatable>
+    <selectable>false</selectable>
+    <neverMultiSelect>true</neverMultiSelect>
+    <holdsRoof>true</holdsRoof>
+    <!--<designationCategory>Structure</designationCategory>-->
+    <staticSunShadowHeight>1.0</staticSunShadowHeight>
+    <blockLight>false</blockLight>
+    <canOverlapZones>true</canOverlapZones>
+    <drawerType>MapMeshAndRealTime</drawerType>
+    <building>
+	  <isInert>true</isInert>
+	  <ignoreNeedsPower>true</ignoreNeedsPower>
+	  <canPlaceOverWall>true</canPlaceOverWall>
+    </building>
+    <comps>
+      <li Class="CompProperties_Forbiddable"/>
+    </comps>
+  </ThingDef>
+
+  <ThingDef ParentName="TempRoof">
+    <defName>RoofTransparentFraming</defName>
+    <label>transparent roof framing</label>
+    <description>Transparent roofing lets the light through, but keeps the weather out!</description>
+    <statBases>
+      <WorkToBuild>200</WorkToBuild>
+    </statBases>
+    <costList>
+      <Steel>4</Steel>
+    </costList>
+    <comps>
+      <li Class="ExpandedRoofing.CompProperties_AddRoof">
+      	<roofDef>RoofTransparent</roofDef>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef ParentName="TempRoof">
+    <defName>RoofSolarFraming</defName>
+    <label>solar roof framing</label>
+    <description>Solar roofing generates power on your roof.  Requires a Solar Controller to function.</description>
+    <statBases>
+      <WorkToBuild>1000</WorkToBuild>
+    </statBases>
+    <costList>
+      <Steel>6</Steel>
+    </costList>
+    <graphicData>
+      <graphicClass>Graphic_Single</graphicClass>
+      <texPath>Things/Building/Power/SolarCollector</texPath>
+      <shaderType>MetaOverlay</shaderType>
+      <damageData>
+        <!--  no damage marks -->
+        <enabled>false</enabled>
+      </damageData>
+    </graphicData>
+    <comps>
+      <li Class="ExpandedRoofing.CompProperties_AddRoof">
+      	<roofDef>RoofSolar</roofDef>
+      </li>
+    </comps>
+  </ThingDef>
+
+
+</Defs>

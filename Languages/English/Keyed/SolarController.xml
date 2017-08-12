@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+	<SolarRoofArea>Solar Roof Area</SolarRoofArea>
+
+	<SolarRoofCollision>Another controller has been detected as connecting to the same roof tiles.  This controller has been disabled.</SolarRoofCollision>
+
+</LanguageData>
