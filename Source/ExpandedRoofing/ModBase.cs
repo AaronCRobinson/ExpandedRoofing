@@ -28,8 +28,10 @@ namespace ExpandedRoofing
             DefDatabase<ThingDef>.Add(def);
 
             // RoofTransparent Frame
+            // NOTE: hack allows Minifiable flag => Build_Install (avoids WipeExistingThings)
             def = MI_NewFrameDef_Thing.Invoke(null, new object[] { ThingDefOf.RoofTransparentFraming }) as ThingDef;
             InjectedDefHasher.GiveShortHasToDef(def, typeof(ThingDef));
+            //def.minifiedDef = def;
             DefDatabase<ThingDef>.Add(def);
 
             // RoofSolarFraming Blueprint
@@ -40,6 +42,7 @@ namespace ExpandedRoofing
             // RoofSolarFraming Frame
             def = MI_NewFrameDef_Thing.Invoke(null, new object[] { ThingDefOf.RoofSolarFraming }) as ThingDef;
             InjectedDefHasher.GiveShortHasToDef(def, typeof(ThingDef));
+            //def.minifiedDef = def;
             DefDatabase<ThingDef>.Add(def);
         }
 

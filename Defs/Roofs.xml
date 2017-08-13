@@ -10,7 +10,8 @@
     <filthLeaving>BuildingRubble</filthLeaving>
     <soundPunchThrough>PunchThroughRoofMetal</soundPunchThrough>
     <modExtensions>
-      <li Class="ExpandedRoofing.TransparentRoofExtension">
+      <li Class="ExpandedRoofing.RoofExtension">
+        <spawnerDef>RoofTransparentFraming</spawnerDef>
         <transparency>0.9</transparency>
       </li>
     </modExtensions>
@@ -24,6 +25,11 @@
     <isNatural>false</isNatural>
     <filthLeaving>BuildingRubble</filthLeaving>
     <soundPunchThrough>RoofCollapse</soundPunchThrough>
+      <modExtensions>
+      <li Class="ExpandedRoofing.RoofExtension">
+        <spawnerDef>RoofSolarFraming</spawnerDef>
+      </li>
+    </modExtensions>
   </RoofDef>
 
 </Roofs>

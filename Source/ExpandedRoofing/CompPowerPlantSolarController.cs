@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
@@ -8,23 +8,28 @@ namespace ExpandedRoofing
 {
     internal class CompPowerPlantSolarController : CompPowerPlant, ICellBoolGiver
     {
-        private const float maxWattagePerSolarPanel = 50f;
-
-        public int RoofCount = 0;
-
-        public bool collision = false;
-
+        private const float maxOutput = 2000f;
+        // NOTE: unsure why this number needs to be magnitudes larger... (not really wattage)
+        private const float wattagePerSolarPanel = 500f; 
+        // NOTE: find a way to stop reseting this...
+        public static bool[] SolarRoof;
+        private int roofCount = 0;
+        private HashSet<int> controllers;
+        private float powerOut;
         public CellBoolDrawer drawer;
-
-        public bool[] SolarRoof;
-
-        public bool[] SolarRoofLooked;
+        public HashSet<int> solarRoofLooked;
 
         protected override float DesiredPowerOutput
         {
             get
             {
-                return Mathf.Lerp(0f, maxWattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * (float)this.RoofCount;
+                Log.Message("count " + this.controllers.Count.ToString());
+                powerOut = 0;
+                if(this.controllers.Count > 0)
+                    powerOut = Mathf.Lerp(0f, wattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * ((float)this.roofCount / this.controllers.Count);
+                if (powerOut > maxOutput)
+                    return maxOutput;
+                return powerOut;
             }
         }
 
@@ -38,14 +43,17 @@ namespace ExpandedRoofing
 
         public bool GetCellBool(int index)
         {
-            return this.SolarRoof[index];
+            return SolarRoof[index];
         }
 
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            this.SolarRoof = new bool[this.parent.Map.cellIndices.NumGridCells];
-            this.SolarRoofLooked = new bool[this.parent.Map.cellIndices.NumGridCells];
+            // NOTE: do we really need the full grid?
+            SolarRoof = new bool[this.parent.Map.cellIndices.NumGridCells];
+            //this.SolarRoofLooked = new bool[this.parent.Map.cellIndices.NumGridCells];
+            this.solarRoofLooked = new HashSet<int>();
+            this.controllers = new HashSet<int>();
         }
 
         public override void CompTick()
@@ -53,16 +61,13 @@ namespace ExpandedRoofing
             base.CompTick();
             if (Gen.IsHashIntervalTick(this.parent, 30))
             {
+                this.solarRoofLooked.Clear();
+                this.controllers.Clear();
                 Queue <IntVec3> lookQueue = new Queue<IntVec3>();
-                for (int i = 0; i < this.SolarRoofLooked.Length; i++)
-                {
-                    this.SolarRoofLooked[i] = false;
-                    this.SolarRoof[i] = false;
-                    this.RoofCount = 0;
-                    this.collision = false;
-                }
+                this.roofCount = 0;
+                for (int i = 0; i < SolarRoof.Length; i++) SolarRoof[i] = false; // TODO: fix this...
 
-                for(int i = -1; i < this.parent.RotatedSize.x + 1; i++)
+                for (int i = -1; i < this.parent.RotatedSize.x + 1; i++)
                     for (int j = -1; j < this.parent.RotatedSize.x + 1; j++)
                         lookQueue.Enqueue(this.parent.Position + new IntVec3(i, 0, j));
 
@@ -72,32 +77,30 @@ namespace ExpandedRoofing
                 while (lookQueue.Count > 0)
                 {
                     IntVec3 loc = lookQueue.Dequeue();
-                    if (!loc.InBounds(map)) continue; // break if out of bounds
-                    this.SolarRoofLooked[map.cellIndices.CellToIndex(loc)] = true; // tag looked
+                    if (!loc.InBounds(map)) continue; // skip ahead if out of bounds
 
-                    // NOTE: maybe a better way to do this...
-                    if (loc.GetThingList(map).Any(t => t.def == ThingDefOf.SolarController))
+                    Building building = loc.GetFirstBuilding(map);
+                    if (building != null && building.thingIDNumber != this.parent.thingIDNumber && !this.controllers.Contains(building.thingIDNumber))
                     {
-                        this.collision = true;
-                        this.RoofCount = 0;
-                        lookQueue.Clear();
-                        break;
+                        this.controllers.Add(building.thingIDNumber);
                     }
 
-                    if (roofGrid.RoofAt(loc) == RoofDefOf.RoofSolar)
+                    if (roofGrid.RoofAt(loc) == RoofDefOf.RoofSolar && !this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(loc)))
                     {
-                        this.RoofCount++;
-                        this.SolarRoof[map.cellIndices.CellToIndex(loc)] = true;
+                        this.roofCount++;
+                        SolarRoof[map.cellIndices.CellToIndex(loc)] = true;
 
                         foreach (IntVec3 cardinal in GenAdj.CardinalDirections)
                         {
-                            if (GenGrid.InBounds(loc + cardinal, map) && !this.SolarRoofLooked[map.cellIndices.CellToIndex(loc + cardinal)])
+                            IntVec3 iv3 = loc + cardinal;
+                            if (GenGrid.InBounds(iv3, map) && !this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(iv3)))
                             {
-                                lookQueue.Enqueue(loc + cardinal);
+                                lookQueue.Enqueue(iv3);
                             }
                         }
 
                     }
+                    this.solarRoofLooked.Add(map.cellIndices.CellToIndex(loc));
                 }
 
                 if (this.drawer != null)
@@ -110,29 +113,17 @@ namespace ExpandedRoofing
         public override void PostDrawExtraSelectionOverlays()
         {
             base.PostDrawExtraSelectionOverlays();
-            if (!this.collision)
+            if (this.drawer == null)
             {
-                if (this.drawer == null)
-                {
-                    this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
-                }
-                this.drawer.MarkForDraw();
-                this.drawer.CellBoolDrawerUpdate();
+                this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
             }
+            this.drawer.MarkForDraw();
+            this.drawer.CellBoolDrawerUpdate();
         }
 
         public override string CompInspectStringExtra()
         {
-            string str;
-            if (!this.collision)
-            {
-                str = Translator.Translate("SolarRoofArea") + ": " + this.RoofCount.ToString("###0");
-            }
-            else
-            {
-                str = Translator.Translate("SolarRoofCollision");
-            }
-            return str + "\n" + base.CompInspectStringExtra();
+            return Translator.Translate("SolarRoofArea") + ": " + this.roofCount.ToString("###0") + "\n" + base.CompInspectStringExtra();
         }
 
         public Color GetCellExtraColor(int index)

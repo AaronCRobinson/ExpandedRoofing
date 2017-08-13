@@ -2,7 +2,7 @@
 <Patch>
 
 	<Operation Class="PatchOperationAdd">
-	    <xpath>*/DesignationCategoryDef[DefName = "Structure"]/specialDesignatorClasses</xpath>
+	    <xpath>*/DesignationCategoryDef[DefName = "Zone"]/specialDesignatorClasses</xpath>
 	    <value>
 	      <li>ExpandedRoofing.Designator_BuildTransparentRoof</li>
 	      <li>ExpandedRoofing.Designator_BuildSolarRoof</li>

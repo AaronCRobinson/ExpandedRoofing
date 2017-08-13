@@ -30,8 +30,9 @@ namespace ExpandedRoofing
         }
     }
 
-    class TransparentRoofExtension : DefModExtension
+    class RoofExtension : DefModExtension
     {
         public float transparency = 0f;
+        public ThingDef spawnerDef;
     }
 }

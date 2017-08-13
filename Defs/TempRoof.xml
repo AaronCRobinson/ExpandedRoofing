@@ -34,6 +34,7 @@
     <neverMultiSelect>true</neverMultiSelect>
     <holdsRoof>true</holdsRoof>
     <!--<designationCategory>Structure</designationCategory>-->
+    <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
     <staticSunShadowHeight>1.0</staticSunShadowHeight>
     <blockLight>false</blockLight>
     <canOverlapZones>true</canOverlapZones>
@@ -42,6 +43,7 @@
 	  <isInert>true</isInert>
 	  <ignoreNeedsPower>true</ignoreNeedsPower>
 	  <canPlaceOverWall>true</canPlaceOverWall>
+	  <isEdifice>false</isEdifice>
     </building>
     <comps>
       <li Class="CompProperties_Forbiddable"/>
@@ -63,6 +65,7 @@
       	<roofDef>RoofTransparent</roofDef>
       </li>
     </comps>
+    <uiIconPath>UI/Designators/BuildRoofAreaGlass</uiIconPath>
   </ThingDef>
 
   <ThingDef ParentName="TempRoof">
@@ -89,6 +92,7 @@
       	<roofDef>RoofSolar</roofDef>
       </li>
     </comps>
+    <uiIconPath>UI/Designators/BuildRoofSolarArea</uiIconPath>
   </ThingDef>
 
 
