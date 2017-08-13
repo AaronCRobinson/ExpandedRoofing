@@ -23,7 +23,6 @@ namespace ExpandedRoofing
         {
             get
             {
-                Log.Message("count " + this.controllers.Count.ToString());
                 powerOut = 0;
                 if(this.controllers.Count > 0)
                     powerOut = Mathf.Lerp(0f, wattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * ((float)this.roofCount / this.controllers.Count);

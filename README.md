@@ -11,7 +11,7 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 - New designators are in the `Zone` tab
 - Due to how roofs are implement, it's easist to rezone default roofing to new types
 - Only a single controller can be connected to a section of solar roofing
-- Each solar roofing panel generates 50w
+- Each solar roofing panel generates 50w (maybe?)
 
 ## Requirements
 - HugsLib

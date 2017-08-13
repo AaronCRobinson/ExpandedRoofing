@@ -58,7 +58,7 @@
       <WorkToBuild>200</WorkToBuild>
     </statBases>
     <costList>
-      <Steel>4</Steel>
+      <Steel>1</Steel>
     </costList>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_AddRoof">
@@ -76,7 +76,7 @@
       <WorkToBuild>1000</WorkToBuild>
     </statBases>
     <costList>
-      <Steel>6</Steel>
+      <Steel>4</Steel>
     </costList>
     <graphicData>
       <graphicClass>Graphic_Single</graphicClass>

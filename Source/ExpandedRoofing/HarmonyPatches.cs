@@ -63,29 +63,31 @@ namespace ExpandedRoofing
             }
         }
 
-        /*public static bool SkipDelete(ref Thing createdThing)
+        public static bool SkipRoofRendering(RoofDef roofDef)
         {
-            if (createdThing.def?.entityDefToBuild != ThingDefOf.RoofTransparentFraming && createdThing.def?.entityDefToBuild != ThingDefOf.RoofSolarFraming) return false;
-            return true;
-        }*/
-
+            return roofDef == RoofDefOf.RoofTransparent || roofDef == RoofDefOf.RoofSolar;
+        }
     }
 
     [StaticConstructorOnStartup]
     internal class HarmonyPatches
     {
         static MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(Helper), nameof(Helper.CheckTransparency));
-        //static MethodInfo MI_SkipDelete = AccessTools.Method(typeof(Helper), nameof(Helper.SkipDelete));
+        static MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(Helper), nameof(Helper.SkipRoofRendering));
         static FieldInfo FI_GlowGrid_map = AccessTools.Field(typeof(GlowGrid), "map");
         static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
         static MethodInfo MI_getDestroyed = AccessTools.Property(typeof(Thing), nameof(Thing.Destroyed)).GetGetMethod();
+        static MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
 
         static HarmonyPatches()
         {
+            //HarmonyInstance.DEBUG = true;
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
             harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameGlowTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetRoofPrefix)), null);
             //harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.TryReplaceWithSolidThing)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryReplaceWithSolidThingTranspiler)));
+
+            harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RegenerateTranspiler)));
         }
 
         public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -126,31 +128,41 @@ namespace ExpandedRoofing
             }
         }
 
-        /*public static IEnumerable<CodeInstruction> TryReplaceWithSolidThingTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static IEnumerable<CodeInstruction> RegenerateTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
             int i;
             for (i = 0; i < instructionList.Count; i++)
             {
                 yield return instructionList[i];
-                if (instructionList[i].opcode == OpCodes.Call && instructionList[i].operand == MI_getDestroyed)
+                if (instructionList[i].opcode == OpCodes.Callvirt && instructionList[i].operand == MI_RoofAt)
                 {
+                    // NOTE: consider finding a better way to locate this...
+                    // make sure state by checking ops a few times
                     yield return instructionList[++i];
-                    if (instructionList[i].opcode == OpCodes.Brtrue)
-                    {
-                        yield return new CodeInstruction(OpCodes.Ldarg_2); // createdThing
-                        yield return new CodeInstruction(OpCodes.Call, MI_SkipDelete);
-                        Label @continue = il.DefineLabel();
-                        yield return new CodeInstruction(OpCodes.Brtrue, @continue);
-                        while (instructionList[++i].opcode != OpCodes.Ldarg_2) { yield return instructionList[i]; } // yield block
-                        instructionList[i].labels.Add(@continue);
-                        yield return instructionList[i];
-                        break;
-                    }
+                    if (instructionList[i].opcode != OpCodes.Stloc_S) break;
+
+                    yield return instructionList[++i];
+                    if (instructionList[i].opcode != OpCodes.Ldloc_S) break;
+
+                    CodeInstruction load = new CodeInstruction(instructionList[i].opcode, instructionList[i].operand);
+
+                    yield return instructionList[++i];
+                    if (instructionList[i].opcode != OpCodes.Brfalse) break;
+
+                    Log.Message("found");
+
+                    yield return load;
+                    yield return new CodeInstruction(OpCodes.Call, MI_SkipRoofRendering);
+                    Label @continue = il.DefineLabel();
+                    yield return new CodeInstruction(OpCodes.Brtrue, @continue);
+                    while (instructionList[++i].opcode != OpCodes.Stloc_S) { yield return instructionList[i]; } // yield block
+                    yield return instructionList[i++];
+                    instructionList[i].labels.Add(@continue);
+                    yield return instructionList[i];
                 }
             }
-            for (i += 1; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
-        }*/
+        }
 
     }
 }
