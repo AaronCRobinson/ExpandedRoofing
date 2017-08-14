@@ -65,7 +65,7 @@ namespace ExpandedRoofing
 
         public static bool SkipRoofRendering(RoofDef roofDef)
         {
-            return roofDef == RoofDefOf.RoofTransparent || roofDef == RoofDefOf.RoofSolar;
+            return roofDef == RoofDefOf.RoofTransparent;
         }
     }
 
@@ -81,11 +81,14 @@ namespace ExpandedRoofing
 
         static HarmonyPatches()
         {
-            //HarmonyInstance.DEBUG = true;
+
+#if DEBUG
+            HarmonyInstance.DEBUG = true;
+#endif
+
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
             harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameGlowTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetRoofPrefix)), null);
-            //harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.TryReplaceWithSolidThing)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TryReplaceWithSolidThingTranspiler)));
 
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RegenerateTranspiler)));
         }
@@ -149,8 +152,6 @@ namespace ExpandedRoofing
 
                     yield return instructionList[++i];
                     if (instructionList[i].opcode != OpCodes.Brfalse) break;
-
-                    Log.Message("found");
 
                     yield return load;
                     yield return new CodeInstruction(OpCodes.Call, MI_SkipRoofRendering);

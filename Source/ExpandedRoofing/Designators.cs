@@ -67,15 +67,8 @@ namespace ExpandedRoofing
             else
             {
                 //GenSpawn.WipeExistingThings(c, this.placingRot, this.entDef.blueprintDef, base.Map, DestroyMode.Deconstruct);
-
+                base.Map.areaManager.NoRoof[c] = false;
                 GenConstruct.PlaceBlueprintForBuild(this.entDef, c, base.Map, this.placingRot, Faction.OfPlayer, null);
-
-                /*Blueprint_Install blueprint_Install = (Blueprint_Install)ThingMaker.MakeThing(this.entDef.installBlueprintDef, null);
-                //Frame frame = (Frame)ThingMaker.MakeThing(this.entDef.frameDef, null);
-                //MI_SetBuildingToReinstall.Invoke(blueprint_Install, new[] { (Building)frame });
-                MI_SetThingToInstallFromMinified.Invoke(blueprint_Install, new[] { (Building)frame });
-                blueprint_Install.SetFactionDirect(Faction.OfPlayer);
-                GenSpawn.Spawn(blueprint_Install, c, base.Map, this.placingRot, false);*/
             }
             MoteMaker.ThrowMetaPuffs(GenAdj.OccupiedRect(c, this.placingRot, this.entDef.Size), base.Map);
             if (this.entDef is ThingDef && (this.entDef as ThingDef).IsOrbitalTradeBeacon)

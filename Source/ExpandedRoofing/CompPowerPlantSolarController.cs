@@ -8,9 +8,9 @@ namespace ExpandedRoofing
 {
     internal class CompPowerPlantSolarController : CompPowerPlant, ICellBoolGiver
     {
-        private const float maxOutput = 2000f;
+        private const float maxOutput = 2500f;
         // NOTE: unsure why this number needs to be magnitudes larger... (not really wattage)
-        private const float wattagePerSolarPanel = 500f; 
+        private const float wattagePerSolarPanel = 200f; 
         // NOTE: find a way to stop reseting this...
         public static bool[] SolarRoof;
         private int roofCount = 0;
@@ -64,8 +64,9 @@ namespace ExpandedRoofing
                 this.controllers.Clear();
                 Queue <IntVec3> lookQueue = new Queue<IntVec3>();
                 this.roofCount = 0;
-                for (int i = 0; i < SolarRoof.Length; i++) SolarRoof[i] = false; // TODO: fix this...
+                for (int i = 0; i < SolarRoof.Length; i++) SolarRoof[i] = false; // TODO: fix the need for this...
 
+                this.controllers.Add(this.parent.thingIDNumber);
                 for (int i = -1; i < this.parent.RotatedSize.x + 1; i++)
                     for (int j = -1; j < this.parent.RotatedSize.x + 1; j++)
                         lookQueue.Enqueue(this.parent.Position + new IntVec3(i, 0, j));
@@ -79,10 +80,9 @@ namespace ExpandedRoofing
                     if (!loc.InBounds(map)) continue; // skip ahead if out of bounds
 
                     Building building = loc.GetFirstBuilding(map);
-                    if (building != null && building.thingIDNumber != this.parent.thingIDNumber && !this.controllers.Contains(building.thingIDNumber))
-                    {
-                        this.controllers.Add(building.thingIDNumber);
-                    }
+                    if (building?.def == ThingDefOf.SolarController && building.thingIDNumber != this.parent.thingIDNumber)
+                        if (!this.controllers.Contains(building.thingIDNumber))
+                            this.controllers.Add(building.thingIDNumber);
 
                     if (roofGrid.RoofAt(loc) == RoofDefOf.RoofSolar && !this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(loc)))
                     {
@@ -92,10 +92,8 @@ namespace ExpandedRoofing
                         foreach (IntVec3 cardinal in GenAdj.CardinalDirections)
                         {
                             IntVec3 iv3 = loc + cardinal;
-                            if (GenGrid.InBounds(iv3, map) && !this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(iv3)))
-                            {
+                            if (!this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(iv3)))
                                 lookQueue.Enqueue(iv3);
-                            }
                         }
 
                     }
@@ -106,6 +104,10 @@ namespace ExpandedRoofing
                 {
                     this.drawer.SetDirty();
                 }
+
+#if DEBUG
+                Log.Message($"CompTick - RoofCount: {this.roofCount} ControllerCount: {this.controllers.Count}");
+#endif
             }
         }
 
