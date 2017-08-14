@@ -6,7 +6,7 @@ using Harmony;
 namespace ExpandedRoofing
 {
     // NOTE: no longer uses HugsLib
-    public class ExpandedRoofingModBase //: ModBase
+    public static class ExpandedRoofingModBase //: ModBase
     {
         private static MethodInfo MI_NewBlueprintDef_Thing = AccessTools.Method(typeof(ThingDefGenerator_Buildings), "NewBlueprintDef_Thing");
         private static MethodInfo MI_NewFrameDef_Thing = AccessTools.Method(typeof(ThingDefGenerator_Buildings), "NewFrameDef_Thing");
@@ -23,7 +23,7 @@ namespace ExpandedRoofing
             ImpliedBlueprintAndFrameDefs(ThingDefOf.RoofSolarFraming);
             ImpliedBlueprintAndFrameDefs(ThingDefOf.ThickStoneRoofFraming);
         }
-
+        
         private static void ImpliedBlueprintAndFrameDefs(ThingDef thingDef)
         {
             ThingDef def;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -29,11 +30,11 @@ namespace ExpandedRoofing
         }
 
         // NOTE: consider destruction mode for better spawning
-        public static void DoLeavings(ThingDef spawnerDef, Map map, CellRect leavingsRect)
+        public static void DoLeavings(ThingDef spawnerDef, ThingDef stuff, Map map, CellRect leavingsRect)
         {
             ThingOwner<Thing> thingOwner = new ThingOwner<Thing>();
             // TODO: fix this by keeping track of stuff.
-            List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(RimWorld.ThingDefOf.BlocksGranite, true);
+            List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(stuff, true);
 
             foreach(ThingCountClass curCntCls in thingCounts)
             {
@@ -91,8 +92,9 @@ namespace ExpandedRoofing
 
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RegenerateTranspiler)));
 
-            // HugsLib OnDefsLoaded
-            harmony.Patch(AccessTools.Method(typeof(PlayDataLoader), "DoPlayLoad"), null, new HarmonyMethod(typeof(ExpandedRoofingModBase), nameof(ExpandedRoofingModBase.DefsLoaded)));
+            InjectedDefHasher.PrepareReflection();
+            ExpandedRoofingModBase.DefsLoaded();
+            //harmony.Patch(AccessTools.Method(typeof(ShortHashGiver), nameof(ShortHashGiver.GiveAllShortHashes)), new HarmonyMethod(typeof(HarmonyPatches), nameof(Banger)), new HarmonyMethod(typeof(HarmonyPatches), nameof(Banger)));
         }
 
         public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -129,7 +131,8 @@ namespace ExpandedRoofing
             if (curRoof != null && def != curRoof)
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
-                if (roofExt != null) Helper.DoLeavings(roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
+                ThingDef stuff = (def == RoofDefOf.ThickStoneRoof) ? RimWorld.ThingDefOf.BlocksGranite : null;
+                if (roofExt != null) Helper.DoLeavings(roofExt.spawnerDef, stuff, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
             }
         }
 

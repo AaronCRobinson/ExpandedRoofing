@@ -43,7 +43,7 @@
 	  <isInert>true</isInert>
 	  <ignoreNeedsPower>true</ignoreNeedsPower>
 	  <canPlaceOverWall>true</canPlaceOverWall>
-	  <!-- <isEdifice>false</isEdifice> -->
+	  <isEdifice>false</isEdifice>
     </building>
     <comps>
       <li Class="CompProperties_Forbiddable"/>

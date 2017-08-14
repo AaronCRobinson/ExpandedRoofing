@@ -66,7 +66,10 @@ namespace ExpandedRoofing
                 }
                 else
                 {
-                    Thing thing = ThingMaker.MakeThing((ThingDef)this.entDef, FI_stuffDef.GetValue(this) as ThingDef);
+                    ThingDef stuff = null;
+                    var val = FI_stuffDef.GetValue(this);
+                    if (val != null) stuff = (ThingDef)val;
+                    Thing thing = ThingMaker.MakeThing((ThingDef)this.entDef, stuff);
                     thing.SetFactionDirect(Faction.OfPlayer);
                     GenSpawn.Spawn(thing, c, base.Map, this.placingRot, false);
                 }
@@ -75,7 +78,10 @@ namespace ExpandedRoofing
             {
                 //GenSpawn.WipeExistingThings(c, this.placingRot, this.entDef.blueprintDef, base.Map, DestroyMode.Deconstruct);
                 base.Map.areaManager.NoRoof[c] = false;
-                GenConstruct.PlaceBlueprintForBuild(this.entDef, c, base.Map, this.placingRot, Faction.OfPlayer, FI_stuffDef.GetValue(this) as ThingDef);
+                ThingDef stuff = null;
+                var val = FI_stuffDef.GetValue(this);
+                if (val != null) stuff = (ThingDef)val;
+                GenConstruct.PlaceBlueprintForBuild(this.entDef, c, base.Map, this.placingRot, Faction.OfPlayer, stuff);
             }
             MoteMaker.ThrowMetaPuffs(GenAdj.OccupiedRect(c, this.placingRot, this.entDef.Size), base.Map);
             if (this.entDef is ThingDef && (this.entDef as ThingDef).IsOrbitalTradeBeacon)

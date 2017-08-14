@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
@@ -7,6 +8,7 @@ namespace ExpandedRoofing
 {
     internal class CompPowerPlantSolarController : CompPowerPlant, ICellBoolGiver
     {
+        private static Dictionary<int, CellBoolDrawer> drawers = new Dictionary<int, CellBoolDrawer>();
         private const float maxOutput = 2500f;
         // NOTE: unsure why this number needs to be magnitudes larger... (not really wattage)
         private const float wattagePerSolarPanel = 200f; 
@@ -14,9 +16,22 @@ namespace ExpandedRoofing
         public static bool[] SolarRoof;
         private int roofCount = 0;
         private HashSet<int> controllers;
-        private float powerOut;
-        public CellBoolDrawer drawer;
         public HashSet<int> solarRoofLooked;
+        private float powerOut;
+
+        // NOTE: these need to be cleared out at somepoint...
+        public CellBoolDrawer GetDrawer()
+        {
+            foreach(int controllerId in this.controllers)
+                if (drawers.ContainsKey(controllerId)) return drawers[controllerId];
+#if DEBUG
+            Log.Message("creating new drawer");
+#endif
+            CellBoolDrawer drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
+            drawers.Add(this.controllers.First(), drawer);
+
+            return drawer;
+        }
 
         protected override float DesiredPowerOutput
         {   
@@ -99,26 +114,23 @@ namespace ExpandedRoofing
                     this.solarRoofLooked.Add(map.cellIndices.CellToIndex(loc));
                 }
 
-                if (this.drawer != null)
-                {
-                    this.drawer.SetDirty();
-                }
-
-#if DEBUG
-                Log.Message($"CompTick - RoofCount: {this.roofCount} ControllerCount: {this.controllers.Count}");
-#endif
+                GetDrawer().SetDirty();
             }
+        }
+
+        public override void PostDraw()
+        {
+            base.PostDraw();
+            //Log.Message("PostDraw");
+            //GetDrawer().CellBoolDrawerUpdate();
         }
 
         public override void PostDrawExtraSelectionOverlays()
         {
             base.PostDrawExtraSelectionOverlays();
-            if (this.drawer == null)
-            {
-                this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
-            }
-            this.drawer.MarkForDraw();
-            this.drawer.CellBoolDrawerUpdate();
+            //Log.Message("PostDrawExtraSelectionOverlays");
+            GetDrawer().MarkForDraw();
+            GetDrawer().CellBoolDrawerUpdate();
         }
 
         public override string CompInspectStringExtra()

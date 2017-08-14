@@ -40,7 +40,7 @@
     <isNatural>false</isNatural>
     <filthLeaving>BuildingRubble</filthLeaving> <!-- CollapsedRocks -->
     <soundPunchThrough>RoofCollapse</soundPunchThrough>
-        <modExtensions>
+    <modExtensions>
       <li Class="ExpandedRoofing.RoofExtension">
         <spawnerDef>ThickStoneRoofFraming</spawnerDef>
       </li>
