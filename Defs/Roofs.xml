@@ -20,14 +20,29 @@
   <RoofDef>
     <defName>RoofSolar</defName>
     <label>solar roof</label>
-    <description>Solar roofing generates power on your roof.  Requires a Solar Controller to function.</description>
+    <description>Solar roofing generates power on your roof. Requires a Solar Controller to function.</description>
     <isThickRoof>false</isThickRoof>
     <isNatural>false</isNatural>
     <filthLeaving>BuildingRubble</filthLeaving>
     <soundPunchThrough>RoofCollapse</soundPunchThrough>
-      <modExtensions>
+    <modExtensions>
       <li Class="ExpandedRoofing.RoofExtension">
         <spawnerDef>RoofSolarFraming</spawnerDef>
+      </li>
+    </modExtensions>
+  </RoofDef>
+
+  <RoofDef>
+    <defName>ThickStoneRoof</defName>
+    <label>thick stone roof</label>
+    <description>Thick stone roofing. Helps keep out the drop pods.</description>
+    <isThickRoof>true</isThickRoof>
+    <isNatural>false</isNatural>
+    <filthLeaving>BuildingRubble</filthLeaving> <!-- CollapsedRocks -->
+    <soundPunchThrough>RoofCollapse</soundPunchThrough>
+        <modExtensions>
+      <li Class="ExpandedRoofing.RoofExtension">
+        <spawnerDef>ThickStoneRoofFraming</spawnerDef>
       </li>
     </modExtensions>
   </RoofDef>

@@ -32,7 +32,8 @@ namespace ExpandedRoofing
         public static void DoLeavings(ThingDef spawnerDef, Map map, CellRect leavingsRect)
         {
             ThingOwner<Thing> thingOwner = new ThingOwner<Thing>();
-            List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(null, true);
+            // TODO: fix this by keeping track of stuff.
+            List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(RimWorld.ThingDefOf.BlocksGranite, true);
 
             foreach(ThingCountClass curCntCls in thingCounts)
             {
@@ -81,16 +82,17 @@ namespace ExpandedRoofing
 
         static HarmonyPatches()
         {
-
 #if DEBUG
             HarmonyInstance.DEBUG = true;
 #endif
-
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
             harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameGlowTranspiler)));
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetRoofPrefix)), null);
 
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RegenerateTranspiler)));
+
+            // HugsLib OnDefsLoaded
+            harmony.Patch(AccessTools.Method(typeof(PlayDataLoader), "DoPlayLoad"), null, new HarmonyMethod(typeof(ExpandedRoofingModBase), nameof(ExpandedRoofingModBase.DefsLoaded)));
         }
 
         public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)

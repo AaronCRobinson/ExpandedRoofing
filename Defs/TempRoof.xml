@@ -43,7 +43,7 @@
 	  <isInert>true</isInert>
 	  <ignoreNeedsPower>true</ignoreNeedsPower>
 	  <canPlaceOverWall>true</canPlaceOverWall>
-	  <isEdifice>false</isEdifice>
+	  <!-- <isEdifice>false</isEdifice> -->
     </building>
     <comps>
       <li Class="CompProperties_Forbiddable"/>
@@ -52,7 +52,7 @@
 
   <ThingDef ParentName="TempRoof">
     <defName>RoofTransparentFraming</defName>
-    <label>transparent roof framing</label>
+    <label>transparent roofing</label>
     <description>Transparent roofing lets the light through, but keeps the weather out!</description>
     <statBases>
       <WorkToBuild>200</WorkToBuild>
@@ -66,11 +66,14 @@
       </li>
     </comps>
     <uiIconPath>UI/Designators/BuildRoofAreaGlass</uiIconPath>
+    <researchPrerequisites>
+      <li>TransparentRoofProduction</li>
+    </researchPrerequisites>
   </ThingDef>
 
   <ThingDef ParentName="TempRoof">
     <defName>RoofSolarFraming</defName>
-    <label>solar roof framing</label>
+    <label>solar roofing</label>
     <description>Solar roofing generates power on your roof.  Requires a Solar Controller to function.</description>
     <statBases>
       <WorkToBuild>1000</WorkToBuild>
@@ -93,7 +96,33 @@
       </li>
     </comps>
     <uiIconPath>UI/Designators/BuildRoofSolarArea</uiIconPath>
+    <researchPrerequisites>
+      <li>SolarRoofProduction</li>
+    </researchPrerequisites>
   </ThingDef>
 
+  <ThingDef ParentName="TempRoof">
+    <defName>ThickStoneRoofFraming</defName>
+    <label>thick stone roofing</label>
+    <description>Provides a thick roofing to keep drop pods out.</description>
+    <statBases>
+      <WorkToBuild>4000</WorkToBuild>
+    </statBases>
+    <stuffCategories>
+      <li>Stony</li>
+    </stuffCategories>
+    <costList>
+      <Steel>8</Steel>
+    </costList>
+    <costStuffCount>50</costStuffCount>
+    <comps>
+      <li Class="ExpandedRoofing.CompProperties_AddRoof">
+      	<roofDef>ThickStoneRoof</roofDef>
+      </li>
+    </comps>
+    <researchPrerequisites>
+      <li>ThickStoneRoofProduction</li>
+    </researchPrerequisites>
+  </ThingDef>
 
 </Defs>

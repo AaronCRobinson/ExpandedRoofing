@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
@@ -20,7 +19,7 @@ namespace ExpandedRoofing
         public HashSet<int> solarRoofLooked;
 
         protected override float DesiredPowerOutput
-        {
+        {   
             get
             {
                 powerOut = 0;

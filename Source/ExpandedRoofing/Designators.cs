@@ -2,6 +2,7 @@
 using Verse;
 using RimWorld;
 using Harmony;
+using UnityEngine;
 
 namespace ExpandedRoofing
 {
@@ -15,8 +16,16 @@ namespace ExpandedRoofing
         public Designator_BuildSolarRoof() : base(ThingDefOf.RoofSolarFraming, RoofDefOf.RoofSolar) { }
     }
 
+    public class Designator_BuildThickStoneRoof : Designator_BuildCustomRoof
+    {
+        public Designator_BuildThickStoneRoof() : base(ThingDefOf.ThickStoneRoofFraming, RoofDefOf.ThickStoneRoof) { }
+    }
+
     public class Designator_BuildCustomRoof : Designator_Build
     {
+        private MethodInfo MI_SetBuildingToReinstall = AccessTools.Method(typeof(Blueprint_Install), "SetBuildingToReinstall");
+        private MethodInfo MI_SetThingToInstallFromMinified = AccessTools.Method(typeof(Blueprint_Install), "SetThingToInstallFromMinified");
+        private FieldInfo FI_stuffDef = AccessTools.Field(typeof(Designator_Build), "stuffDef");
         protected RoofDef roofDef;
 
         public Designator_BuildCustomRoof(BuildableDef entDef, RoofDef rDef) : base(entDef)
@@ -43,8 +52,6 @@ namespace ExpandedRoofing
             return false;
         }
 
-        private MethodInfo MI_SetBuildingToReinstall = AccessTools.Method(typeof(Blueprint_Install), "SetBuildingToReinstall");
-        private MethodInfo MI_SetThingToInstallFromMinified = AccessTools.Method(typeof(Blueprint_Install), "SetThingToInstallFromMinified");
         public override void DesignateSingleCell(IntVec3 c)
         {
             if (TutorSystem.TutorialMode && !TutorSystem.AllowAction(new EventPack(base.TutorTagDesignate, c)))
@@ -59,7 +66,7 @@ namespace ExpandedRoofing
                 }
                 else
                 {
-                    Thing thing = ThingMaker.MakeThing((ThingDef)this.entDef, null);
+                    Thing thing = ThingMaker.MakeThing((ThingDef)this.entDef, FI_stuffDef.GetValue(this) as ThingDef);
                     thing.SetFactionDirect(Faction.OfPlayer);
                     GenSpawn.Spawn(thing, c, base.Map, this.placingRot, false);
                 }
@@ -68,7 +75,7 @@ namespace ExpandedRoofing
             {
                 //GenSpawn.WipeExistingThings(c, this.placingRot, this.entDef.blueprintDef, base.Map, DestroyMode.Deconstruct);
                 base.Map.areaManager.NoRoof[c] = false;
-                GenConstruct.PlaceBlueprintForBuild(this.entDef, c, base.Map, this.placingRot, Faction.OfPlayer, null);
+                GenConstruct.PlaceBlueprintForBuild(this.entDef, c, base.Map, this.placingRot, Faction.OfPlayer, FI_stuffDef.GetValue(this) as ThingDef);
             }
             MoteMaker.ThrowMetaPuffs(GenAdj.OccupiedRect(c, this.placingRot, this.entDef.Size), base.Map);
             if (this.entDef is ThingDef && (this.entDef as ThingDef).IsOrbitalTradeBeacon)
@@ -93,4 +100,77 @@ namespace ExpandedRoofing
             GenUI.RenderMouseoverBracket();
         }
     }
+
+    public class Designator_AreaNoThickRoof : Designator_AreaNoRoof
+    {
+        //private DesignateMode mode;
+
+        //public Designator_AreaNoThickRoof(DesignateMode mode) : base(mode) { }
+
+        public Designator_AreaNoThickRoof() : base(DesignateMode.Add)
+        {
+            this.defaultLabel = "DesignatorAreaNoRoofExpand".Translate();
+            this.defaultDesc = "DesignatorAreaNoRoofExpandDesc".Translate();
+            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOn", true);
+            //this.hotKey = KeyBindingDefOf.Misc5;
+            this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
+            this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
+            this.soundSucceeded = SoundDefOf.DesignateAreaAdd;
+        }
+
+        public override AcceptanceReport CanDesignateCell(IntVec3 c)
+        {
+            if (!c.InBounds(base.Map))
+            {
+                return false;
+            }
+            if (c.Fogged(base.Map))
+            {
+                return false;
+            }
+            bool flag = base.Map.areaManager.NoRoof[c];
+            /*if (this.mode == DesignateMode.Add)
+            {
+                return !flag;
+            }*/
+            return !flag;
+        }
+
+        public override bool Visible
+        {
+            get
+            {
+                if (DebugSettings.godMode) return true;
+                return ResearchProjectDefOf.ThickStoneRoofRemoval.IsFinished;
+            }
+        }
+    }
+
+    /*public class Designator_AreaNoThickRoofExpand : Designator_AreaNoThickRoof
+    {
+        public Designator_AreaNoThickRoofExpand() : base(DesignateMode.Add)
+        {
+            this.defaultLabel = "DesignatorAreaNoRoofExpand".Translate();
+            this.defaultDesc = "DesignatorAreaNoRoofExpandDesc".Translate();
+            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOn", true);
+            //this.hotKey = KeyBindingDefOf.Misc5;
+            this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
+            this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
+            this.soundSucceeded = SoundDefOf.DesignateAreaAdd;
+        }
+    }*/
+
+    /*public class Designator_AreaNoThickRoofClear : Designator_AreaNoThickRoof
+    {
+        public Designator_AreaNoThickRoofClear() : base(DesignateMode.Remove)
+        {
+            this.defaultLabel = "DesignatorAreaNoRoofClear".Translate();
+            this.defaultDesc = "DesignatorAreaNoRoofClearDesc".Translate();
+            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOff", true);
+            //this.hotKey = KeyBindingDefOf.Misc6;
+            this.soundDragSustain = SoundDefOf.DesignateDragAreaDelete;
+            this.soundDragChanged = SoundDefOf.DesignateDragAreaDeleteChanged;
+            this.soundSucceeded = SoundDefOf.DesignateAreaDelete;
+        }
+    }*/
 }

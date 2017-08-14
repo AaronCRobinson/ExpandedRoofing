@@ -6,6 +6,8 @@
 	    <value>
 	      <li>ExpandedRoofing.Designator_BuildTransparentRoof</li>
 	      <li>ExpandedRoofing.Designator_BuildSolarRoof</li>
+	      <li>ExpandedRoofing.Designator_BuildThickStoneRoof</li>
+	      <li>ExpandedRoofing.Designator_AreaNoThickRoof</li>
 	    </value>
 	</Operation>
 

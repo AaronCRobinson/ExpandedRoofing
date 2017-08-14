@@ -9,5 +9,7 @@ namespace ExpandedRoofing
         public static RoofDef RoofTransparent;
 
         public static RoofDef RoofSolar;
+
+        public static RoofDef ThickStoneRoof;
     }
 }
