@@ -87,15 +87,33 @@ namespace ExpandedRoofing
             HarmonyInstance.DEBUG = true;
 #endif
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
+
+            // correct lighting for plant growth
             harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameGlowTranspiler)));
+
+            // set roof to return materials
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetRoofPrefix)), null);
 
+            // fix lighting inside rooms with transparent roof  
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RegenerateTranspiler)));
 
-            InjectedDefHasher.PrepareReflection();
-            ExpandedRoofingModBase.DefsLoaded();
-            //harmony.Patch(AccessTools.Method(typeof(ShortHashGiver), nameof(ShortHashGiver.GiveAllShortHashes)), new HarmonyMethod(typeof(HarmonyPatches), nameof(Banger)), new HarmonyMethod(typeof(HarmonyPatches), nameof(Banger)));
+            // Allow roof frames to be built above things (e.g. trees)
+            harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
         }
+
+        public static bool FirstBlockingThingPrefix(Blueprint __instance)
+        {
+            ThingDef thingDef = __instance.def.entityDefToBuild as ThingDef;
+            if (thingDef?.HasComp(typeof(CompAddRoof)) == true) return false;
+            return true;
+        }
+
+        /*public static bool BlocksFramePlacementPrefix(Blueprint blue, Thing t)
+        {
+            ThingDef thingDef = blue.def.entityDefToBuild as ThingDef;
+            if (thingDef?.HasComp(typeof(CompProperties_AddRoof)) == true) return false;
+            return true;
+        }*/
 
         public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {

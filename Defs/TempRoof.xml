@@ -32,7 +32,6 @@
     <rotatable>false</rotatable>
     <selectable>false</selectable>
     <neverMultiSelect>true</neverMultiSelect>
-    <holdsRoof>true</holdsRoof>
     <!--<designationCategory>Structure</designationCategory>-->
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
     <staticSunShadowHeight>1.0</staticSunShadowHeight>

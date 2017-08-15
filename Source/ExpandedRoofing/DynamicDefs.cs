@@ -5,25 +5,21 @@ using Harmony;
 
 namespace ExpandedRoofing
 {
-    // NOTE: no longer uses HugsLib
-    public static class ExpandedRoofingModBase //: ModBase
+    [StaticConstructorOnStartup]
+    internal class DynamicDefs
     {
         private static MethodInfo MI_NewBlueprintDef_Thing = AccessTools.Method(typeof(ThingDefGenerator_Buildings), "NewBlueprintDef_Thing");
         private static MethodInfo MI_NewFrameDef_Thing = AccessTools.Method(typeof(ThingDefGenerator_Buildings), "NewFrameDef_Thing");
 
-        /*public string ModIdentifier
-        {
-            get { return "ExpandedRoofing"; }
-        }*/
-
-        public static void DefsLoaded()
+        static DynamicDefs()
         {
             Log.Message("ExpandedRoofing: generating dynamic defs");
+            InjectedDefHasher.PrepareReflection();
             ImpliedBlueprintAndFrameDefs(ThingDefOf.RoofTransparentFraming);
             ImpliedBlueprintAndFrameDefs(ThingDefOf.RoofSolarFraming);
             ImpliedBlueprintAndFrameDefs(ThingDefOf.ThickStoneRoofFraming);
         }
-        
+
         private static void ImpliedBlueprintAndFrameDefs(ThingDef thingDef)
         {
             ThingDef def;
@@ -36,6 +32,5 @@ namespace ExpandedRoofing
             InjectedDefHasher.GiveShortHasToDef(def, typeof(ThingDef));
             DefDatabase<ThingDef>.Add(def);
         }
-
     }
 }

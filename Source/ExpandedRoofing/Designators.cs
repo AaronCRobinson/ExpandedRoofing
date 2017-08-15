@@ -41,14 +41,17 @@ namespace ExpandedRoofing
             }
         }
 
-        // TODO: need to figure a better way to handle support...
+        // assuming thick roofs are always natural too..
         public override AcceptanceReport CanDesignateCell(IntVec3 loc)
         {
             if (!RoofCollapseUtility.WithinRangeOfRoofHolder(loc, base.Map)) return false;
+
+            if (loc.GetFirstThing(base.Map, this.entDef.blueprintDef) != null) return false;
+
             RoofDef rDef = base.Map.roofGrid.RoofAt(loc);
             if (rDef == null) return true;
-            // assuming thick roofs are always natural too..
-            if (!rDef.isThickRoof && rDef != this.roofDef) return true;
+            
+            if ((!rDef.isThickRoof || ResearchProjectDefOf.ThickStoneRoofRemoval.IsFinished) && rDef != this.roofDef) return true;
             return false;
         }
 
@@ -109,16 +112,11 @@ namespace ExpandedRoofing
 
     public class Designator_AreaNoThickRoof : Designator_AreaNoRoof
     {
-        //private DesignateMode mode;
-
-        //public Designator_AreaNoThickRoof(DesignateMode mode) : base(mode) { }
-
         public Designator_AreaNoThickRoof() : base(DesignateMode.Add)
         {
             this.defaultLabel = "DesignatorAreaNoRoofExpand".Translate();
             this.defaultDesc = "DesignatorAreaNoRoofExpandDesc".Translate();
             this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOn", true);
-            //this.hotKey = KeyBindingDefOf.Misc5;
             this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
             this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
             this.soundSucceeded = SoundDefOf.DesignateAreaAdd;
@@ -152,31 +150,4 @@ namespace ExpandedRoofing
         }
     }
 
-    /*public class Designator_AreaNoThickRoofExpand : Designator_AreaNoThickRoof
-    {
-        public Designator_AreaNoThickRoofExpand() : base(DesignateMode.Add)
-        {
-            this.defaultLabel = "DesignatorAreaNoRoofExpand".Translate();
-            this.defaultDesc = "DesignatorAreaNoRoofExpandDesc".Translate();
-            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOn", true);
-            //this.hotKey = KeyBindingDefOf.Misc5;
-            this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
-            this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
-            this.soundSucceeded = SoundDefOf.DesignateAreaAdd;
-        }
-    }*/
-
-    /*public class Designator_AreaNoThickRoofClear : Designator_AreaNoThickRoof
-    {
-        public Designator_AreaNoThickRoofClear() : base(DesignateMode.Remove)
-        {
-            this.defaultLabel = "DesignatorAreaNoRoofClear".Translate();
-            this.defaultDesc = "DesignatorAreaNoRoofClearDesc".Translate();
-            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOff", true);
-            //this.hotKey = KeyBindingDefOf.Misc6;
-            this.soundDragSustain = SoundDefOf.DesignateDragAreaDelete;
-            this.soundDragChanged = SoundDefOf.DesignateDragAreaDeleteChanged;
-            this.soundSucceeded = SoundDefOf.DesignateAreaDelete;
-        }
-    }*/
 }
