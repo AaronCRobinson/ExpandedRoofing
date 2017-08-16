@@ -4,17 +4,21 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 
 ## Features
 - Transparent roofs that let almost all light through
-- Solar roofs that can be used to generate power
-- Solar controller that provides power from each solar roofing panel
+- Solar roofs and controllers that can be used to generate power
+- Removal of thick roofs
+- Thick roofs
+- 4 new techs to research for each of these features.
+
+## Solar Roofing and Controllers explained
+- Each controller has a max output of 2500w
+- Each solar tile produces 200w during full sun
+- There is no limit to the number of controllers connected to a section of tiles
 
 ## Notes
 - New designators are in the `Zone` tab
 - Due to how roofs are implement, it's easist to rezone default roofing to new types
 - Only a single controller can be connected to a section of solar roofing
 - Each solar roofing panel generates 50w (maybe?)
-
-## Requirements
-- HugsLib
 
 ## Acknowledgements
 

@@ -16,7 +16,7 @@ namespace ExpandedRoofing
             RoofExtension transparentRoofExt = map.roofGrid.RoofAt(c)?.GetModExtension<RoofExtension>();
             if (transparentRoofExt != null)
             {
-                num *= transparentRoofExt.transparency;
+                num = map.skyManager.CurSkyGlow * transparentRoofExt.transparency;
                 if (num == 1f) return true;
             }
             return false;

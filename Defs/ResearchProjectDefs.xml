@@ -17,8 +17,8 @@
 
 	<ResearchProjectDef>
 		<defName>SolarRoofProduction</defName>
-		<label>solar roofs</label>
-		<description>Allows you to build solar controllers and solar roofs for scalable power.</description>
+		<label>scalable solar roofs</label>
+		<description>Advances in solar panels allows you to build solar controllers and solar roofs for scalable power solutions.</description>
 		<tab>ExpandedRoofing</tab>
 		<baseCost>1200</baseCost>
 		<techLevel>Industrial</techLevel>
@@ -31,7 +31,7 @@
 
 	<ResearchProjectDef>
 		<defName>ThickStoneRoofRemoval</defName>
-		<label>thick stone roofs</label>
+		<label>thick stone roof removal</label>
 		<description>Allows you to remove thick stone roofs.</description>
 		<tab>ExpandedRoofing</tab>
 		<baseCost>4000</baseCost>

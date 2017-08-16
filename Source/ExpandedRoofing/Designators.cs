@@ -114,8 +114,8 @@ namespace ExpandedRoofing
     {
         public Designator_AreaNoThickRoof() : base(DesignateMode.Add)
         {
-            this.defaultLabel = "DesignatorAreaNoRoofExpand".Translate();
-            this.defaultDesc = "DesignatorAreaNoRoofExpandDesc".Translate();
+            this.defaultLabel = "DesignatorAreaNoThickRoof".Translate();
+            this.defaultDesc = "DesignatorAreaNoThickRoofDesc".Translate();
             this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOn", true);
             this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
             this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
