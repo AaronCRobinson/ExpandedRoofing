@@ -11,17 +11,15 @@ namespace ExpandedRoofing
 {
     static class Helper
     {
-        static float num;
-        public static float CheckTransparency(GlowGrid gg, Map map, IntVec3 c)
+        public static bool CheckTransparency(GlowGrid gg, Map map, IntVec3 c, ref float num)
         {
-            num = 0;
             RoofExtension transparentRoofExt = map.roofGrid.RoofAt(c)?.GetModExtension<RoofExtension>();
             if (transparentRoofExt != null)
             {
-                num = map.skyManager.CurSkyGlow * transparentRoofExt.transparency;
-                if (num == 1f) return num;
+                num *= transparentRoofExt.transparency;
+                if (num == 1f) return true;
             }
-            return num;
+            return false;
         }
 
         private static int KillFinalize(int count)
@@ -128,12 +126,13 @@ namespace ExpandedRoofing
                     yield return new CodeInstruction(OpCodes.Dup);
                     yield return new CodeInstruction(OpCodes.Ldfld, FI_GlowGrid_map);
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return new CodeInstruction(OpCodes.Ldloca, 0);
                     yield return new CodeInstruction(OpCodes.Call, MI_CheckTransparency);
-                    yield return new CodeInstruction(OpCodes.Stloc_0);
-                    yield return new CodeInstruction(OpCodes.Ldloc_0);
-                    yield return new CodeInstruction(OpCodes.Ldc_R4, 1f);
+                    //yield return new CodeInstruction(OpCodes.Stloc_0);
+                    //yield return new CodeInstruction(OpCodes.Ldloc_0);
+                    //yield return new CodeInstruction(OpCodes.Ldc_R4, 1f);
                     Label @continue = il.DefineLabel();
-                    yield return new CodeInstruction(OpCodes.Bne_Un, @continue);
+                    yield return new CodeInstruction(OpCodes.Brfalse, @continue);
                     yield return new CodeInstruction(OpCodes.Ldloc_0);
                     yield return new CodeInstruction(OpCodes.Ret);
                     yield return new CodeInstruction(instructionList[i].opcode, instructionList[i].operand) { labels = { @continue } };
