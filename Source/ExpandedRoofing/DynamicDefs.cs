@@ -30,6 +30,7 @@ namespace ExpandedRoofing
             // Frame
             def = MI_NewFrameDef_Thing.Invoke(null, new object[] { thingDef }) as ThingDef;
             InjectedDefHasher.GiveShortHasToDef(def, typeof(ThingDef));
+            if (thingDef.MadeFromStuff) def.stuffCategories = thingDef.stuffCategories;
             DefDatabase<ThingDef>.Add(def);
         }
     }

@@ -28,13 +28,17 @@ namespace ExpandedRoofing
         }
 
         // NOTE: consider destruction mode for better spawning
-        public static void DoLeavings(ThingDef spawnerDef, ThingDef stuff, Map map, CellRect leavingsRect)
+        public static void DoLeavings(RoofDef curRoof, ThingDef spawnerDef, Map map, CellRect leavingsRect)
         {
             ThingOwner<Thing> thingOwner = new ThingOwner<Thing>();
-            // TODO: fix this by keeping track of stuff.
+            ThingDef stuff = null;
+            string stuffDefName = curRoof.defName.Replace("ThickStoneRoof", "");
+            if(stuffDefName == "Jade") stuff = DefDatabase<ThingDef>.GetNamed(stuffDefName, false);
+            else stuff = DefDatabase<ThingDef>.GetNamed($"Blocks{stuffDefName}", false);
+
             List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(stuff, true);
 
-            foreach(ThingCountClass curCntCls in thingCounts)
+            foreach (ThingCountClass curCntCls in thingCounts)
             {
                 int val = KillFinalize(curCntCls.count);
                 if (val > 0)
@@ -56,11 +60,12 @@ namespace ExpandedRoofing
                 }*/
                 if (!thingOwner.TryDrop(thingOwner[0], list[num], map, ThingPlaceMode.Near, out Thing thing, null))
                 {
-                    Log.Warning(string.Concat(new object[] { "Failed to place all leavings for destroyed thing ", spawnerDef, " at ", leavingsRect.CenterCell }));
+                    Log.Warning(string.Concat(new object[] { "Failed to place all leavings for destroyed thing ", curRoof, " at ", leavingsRect.CenterCell }));
                     return;
                 }
                 if (++num >= list.Count) num = 0;
             }
+
         }
 
         public static bool SkipRoofRendering(RoofDef roofDef)
@@ -148,8 +153,7 @@ namespace ExpandedRoofing
             if (curRoof != null && def != curRoof)
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
-                ThingDef stuff = (def == RoofDefOf.ThickStoneRoof) ? RimWorld.ThingDefOf.BlocksGranite : null;
-                if (roofExt != null) Helper.DoLeavings(roofExt.spawnerDef, stuff, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
+                if (roofExt != null) Helper.DoLeavings(curRoof, roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
             }
         }
 

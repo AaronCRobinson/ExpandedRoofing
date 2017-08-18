@@ -32,7 +32,7 @@
     </modExtensions>
   </RoofDef>
 
-  <RoofDef>
+  <RoofDef Name="ThickStoneRoofBase">
     <defName>ThickStoneRoof</defName>
     <label>thick stone roof</label>
     <description>Thick stone roofing. Helps keep out the drop pods.</description>
@@ -46,5 +46,30 @@
       </li>
     </modExtensions>
   </RoofDef>
+
+  <RoofDef ParentName="ThickStoneRoofBase">
+    <defName>JadeThickStoneRoof</defName>
+  </RoofDef>
+
+  <RoofDef ParentName="ThickStoneRoofBase">
+    <defName>SandstoneThickStoneRoof</defName>
+  </RoofDef>
+
+  <RoofDef ParentName="ThickStoneRoofBase">
+    <defName>GraniteThickStoneRoof</defName>
+  </RoofDef>
+
+  <RoofDef ParentName="ThickStoneRoofBase">
+    <defName>LimestoneThickStoneRoof</defName>
+  </RoofDef>
+
+  <RoofDef ParentName="ThickStoneRoofBase">
+    <defName>SlateThickStoneRoof</defName>
+  </RoofDef>
+
+  <RoofDef ParentName="ThickStoneRoofBase">
+    <defName>MarbleThickStoneRoof</defName>
+  </RoofDef>
+
 
 </Roofs>

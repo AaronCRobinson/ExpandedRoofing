@@ -17,14 +17,12 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 ## Notes
 - New designators are in the `Zone` tab
 - Due to how roofs are implement, it's easist to rezone default roofing to new types
-- Only a single controller can be connected to a section of solar roofing
-- Each solar roofing panel generates 50w (maybe?)
 
 ## Acknowledgements
 
 Thank to Erdelf for getting me back on track and Xen for designator artwork.
 
-Special thanks to Pardeike's amazing non-destructive patching library, Harmony, and Jec for his superb tools.
+Special thanks to Pardeike's amazing non-destructive patching library, Harmony.
 <p align="center">
   <a href="https://github.com/pardeike/Harmony">
     <img src="https://s24.postimg.org/58bl1rz39/logo.png" alt="Harmony" />

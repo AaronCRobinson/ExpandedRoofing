@@ -15,7 +15,10 @@ namespace ExpandedRoofing
         public override void CompTick()
         {
             base.CompTick();
-            this.parent.Map.roofGrid.SetRoof(this.parent.Position, this.Props.roofDef);
+            RoofDef roofDef = this.Props.roofDef;
+            ThingDef stuff = this.parent.Stuff; 
+            if (stuff != null) roofDef = DefDatabase<RoofDef>.GetNamed($"{stuff.defName.Replace("Blocks", "")}ThickStoneRoof", false);
+            this.parent.Map.roofGrid.SetRoof(this.parent.Position, roofDef);
             if (!this.parent.Destroyed) this.parent.Destroy(); // auto delete
         }
     }

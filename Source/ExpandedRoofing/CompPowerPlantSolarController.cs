@@ -116,7 +116,7 @@ namespace ExpandedRoofing
 
         public override string CompInspectStringExtra()
         {
-            return Translator.Translate("SolarRoofArea") + ": " + this.roofCount.ToString("###0") + "\n" + base.CompInspectStringExtra();
+            return "SolarRoofArea".Translate() + ": " + this.roofCount.ToString("###0") + "\n" + base.CompInspectStringExtra();
         }
 
         public Color GetCellExtraColor(int index)
