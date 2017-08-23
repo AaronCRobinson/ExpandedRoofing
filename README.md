@@ -18,6 +18,12 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 - New designators are in the `Zone` tab
 - Due to how roofs are implement, it's easist to rezone default roofing to new types
 
+## Translations
+
+American - Me, because who needs English. I am never going to Endland...
+
+Turkish - Slevilex
+
 ## Acknowledgements
 
 Thank to Erdelf for getting me back on track and Xen for designator artwork.
