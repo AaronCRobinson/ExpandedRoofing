@@ -9,13 +9,27 @@ namespace ExpandedRoofing
     internal class CompPowerPlantSolarController : CompPowerPlant, ICellBoolGiver
     {
         private CellBoolDrawer drawer; // TODO: consider static
-        private const float maxOutput = 2500f;
-        private const float wattagePerSolarPanel = 200f; 
         public static bool[] SolarRoof; // NOTE: find a way to stop reseting this...
         private int roofCount = 0;
         private HashSet<int> controllers;
         public HashSet<int> solarRoofLooked;
         private float powerOut;
+
+        public float WattagePerSolarPanel
+        {
+            get
+            {
+                return ExpandedRoofingMod.settings.solarController_wattagePerSolarPanel;
+            }
+        }
+
+        public float MaxOutput
+        {
+            get
+            {
+                return ExpandedRoofingMod.settings.solarController_maxOutput;
+            }
+        }
 
         protected override float DesiredPowerOutput
         {   
@@ -23,9 +37,9 @@ namespace ExpandedRoofing
             {
                 powerOut = 0;
                 if(this.controllers.Count > 0)
-                    powerOut = Mathf.Lerp(0f, wattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * ((float)this.roofCount / this.controllers.Count);
-                if (powerOut > maxOutput)
-                    return maxOutput;
+                    powerOut = Mathf.Lerp(0f, WattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * ((float)this.roofCount / this.controllers.Count);
+                if (powerOut > MaxOutput)
+                    return MaxOutput;
                 return powerOut;
             }
         }

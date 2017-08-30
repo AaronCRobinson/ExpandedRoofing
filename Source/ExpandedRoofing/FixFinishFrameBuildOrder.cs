@@ -52,9 +52,7 @@ namespace ExpandedRoofing
             foreach (CodeInstruction instruction in instructions)
             {
                 if (instruction.opcode == OpCodes.Call && instruction.operand == MI_ClosestThingReachable)
-                {
                     yield return new CodeInstruction(OpCodes.Call, MI_ClosestThingReachableWrapper);
-                }
                 else
                     yield return instruction;
             }

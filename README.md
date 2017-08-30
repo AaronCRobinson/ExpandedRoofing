@@ -24,6 +24,8 @@ American - Me, because who needs English. I am never going to Endland...
 
 Turkish - Slevilex
 
+Russian - Garr Incorporated
+
 ## Acknowledgements
 
 Thank to Erdelf for getting me back on track and Xen for designator artwork.
