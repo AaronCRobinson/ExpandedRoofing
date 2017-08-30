@@ -54,13 +54,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicDefs.cs" />
-    <Compile Include="ResearchProjectDefOf.cs" />
+    <Compile Include="FixFinishFrameBuildOrder.cs" />
     <Compile Include="CompPowerPlantSolarController.cs" />
     <Compile Include="Designators.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="InjectedDefHasher.cs" />
-    <Compile Include="RoofDefOf.cs" />
-    <Compile Include="ThingDefOf.cs" />
+    <Compile Include="DefOf.cs" />
     <Compile Include="ExpandedRoofing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

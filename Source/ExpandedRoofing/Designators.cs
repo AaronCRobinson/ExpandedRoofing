@@ -41,10 +41,11 @@ namespace ExpandedRoofing
             }
         }
 
-        // assuming thick roofs are always natural too..
         public override AcceptanceReport CanDesignateCell(IntVec3 loc)
         {
+#if DEBUG
             if (!RoofCollapseUtility.WithinRangeOfRoofHolder(loc, base.Map)) return false;
+#endif
 
             if (loc.GetFirstThing(base.Map, this.entDef.blueprintDef) != null) return false;
 

@@ -15,4 +15,20 @@ namespace ExpandedRoofing
 
         public static ThingDef SolarController;
     }
+
+    [DefOf]
+    public static class RoofDefOf
+    {
+        public static RoofDef RoofTransparent;
+
+        public static RoofDef RoofSolar;
+
+        public static RoofDef ThickStoneRoof;
+    }
+
+    [DefOf]
+    public static class ResearchProjectDefOf
+    {
+        public static ResearchProjectDef ThickStoneRoofRemoval;
+    }
 }
