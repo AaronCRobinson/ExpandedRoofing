@@ -2,6 +2,7 @@
 using Verse;
 using UnityEngine;
 using ModSettingsHelper;
+using System.Linq;
 
 namespace ExpandedRoofing
 {
@@ -25,6 +26,9 @@ namespace ExpandedRoofing
         public static ExpandedRoofingSettings settings;
         private string solarController_maxOutput_buffer;
         private string solarController_wattagePerSolarPanel_buffer;
+        
+        // Used to detect 
+        private const string dontTemptMe_ModName = "Don't Tempt Me!";
 
         public ExpandedRoofingMod(ModContentPack content) : base(content)
         {
@@ -35,10 +39,15 @@ namespace ExpandedRoofing
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
-            ModWindowHelper.Reset();
-            ModWindowHelper.MakeTextFieldNumericLabeled<float>(inRect, "ER_MaxOutputLabel".Translate(), ref settings.solarController_maxOutput, ref this.solarController_maxOutput_buffer);
-            ModWindowHelper.MakeTextFieldNumericLabeled<float>(inRect, "ER_WattagePerSolarPanelLabel".Translate(), ref settings.solarController_wattagePerSolarPanel, ref this.solarController_wattagePerSolarPanel_buffer);
-            settings.Write();
+            // Current.ProgramState == ProgramState.Entry
+            // NOTE: this disables the mod settings when "Don't Tempt Me!" is installed.
+            if (ModLister.AllInstalledMods.FirstOrDefault(m => m.Name == dontTemptMe_ModName)?.Active != true)
+            {
+                ModWindowHelper.Reset();
+                ModWindowHelper.MakeTextFieldNumericLabeled<float>(inRect, "ER_MaxOutputLabel".Translate(), ref settings.solarController_maxOutput, ref this.solarController_maxOutput_buffer);
+                ModWindowHelper.MakeTextFieldNumericLabeled<float>(inRect, "ER_WattagePerSolarPanelLabel".Translate(), ref settings.solarController_wattagePerSolarPanel, ref this.solarController_wattagePerSolarPanel_buffer);
+                settings.Write();
+            }
         }
 
     }
