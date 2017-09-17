@@ -59,8 +59,7 @@
     <designationHotkey>Misc5</designationHotkey>
     <constructEffect>ConstructMetal</constructEffect>
     <researchPrerequisites>
-      <li>Electricity</li>
-      <li>SolarPanels</li>
+      <li>SolarRoofProduction</li>
     </researchPrerequisites>
   </ThingDef>
 
