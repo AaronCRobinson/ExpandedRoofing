@@ -1,4 +1,4 @@
-# ExpandedRoofing [![RimWorld Alpha 17](https://img.shields.io/badge/RimWorld-Alpha%2017-brightgreen.svg)](http://rimworldgame.com/) 
+# ExpandedRoofing [![RimWorld Alpha 17](https://img.shields.io/badge/RimWorld-Alpha%2017-brightgreen.svg)](http://rimworldgame.com/)
 
 Adds customizable roofing, with transparent greenhouse roofing and photovoltaic solar roofing. Reworked from Vendan's original idea.
 
@@ -26,6 +26,8 @@ Turkish - Slevilex
 
 Russian - Garr Incorporated
 
+French - Jozay
+
 ## Acknowledgements
 
 Thank to Erdelf for getting me back on track and Xen for designator artwork.
@@ -43,4 +45,4 @@ Special thanks to Pardeike's amazing non-destructive patching library, Harmony.
   <a href="./LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-lightgray.svg?style=flat" alt="MIT License" />
   </a>
-</p> 
+</p>
