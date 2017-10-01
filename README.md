@@ -19,14 +19,10 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 - Due to how roofs are implement, it's easist to rezone default roofing to new types
 
 ## Translations
-
-American - Me, because who needs English. I am never going to Endland...
-
-Turkish - Slevilex
-
-Russian - Garr Incorporated
-
-French - Jozay
+- English
+- Turkish (by Slevilex)
+- Russian (by Garr Incorporated)
+- French (by Jozay)
 
 ## Acknowledgements
 
