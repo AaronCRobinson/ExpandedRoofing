@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using UnityEngine;
 using Verse;
 using RimWorld;
 using Harmony;
@@ -54,10 +54,6 @@ namespace ExpandedRoofing
             int num = 0;
             while (thingOwner.Count > 0)
             {
-                /*if (mode == DestroyMode.KillFinalize && !map.areaManager.Home[list2[num4]])
-                {
-                    thingOwner[0].SetForbidden(true, false);
-                }*/
                 if (!thingOwner.TryDrop(thingOwner[0], list[num], map, ThingPlaceMode.Near, out Thing thing, null))
                 {
                     Log.Warning(string.Concat(new object[] { "Failed to place all leavings for destroyed thing ", curRoof, " at ", leavingsRect.CenterCell }));
@@ -77,12 +73,8 @@ namespace ExpandedRoofing
     [StaticConstructorOnStartup]
     internal class HarmonyPatches
     {
-        static MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(Helper), nameof(Helper.CheckTransparency));
-        static MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(Helper), nameof(Helper.SkipRoofRendering));
-        static FieldInfo FI_GlowGrid_map = AccessTools.Field(typeof(GlowGrid), "map");
-        static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
-        static MethodInfo MI_getDestroyed = AccessTools.Property(typeof(Thing), nameof(Thing.Destroyed)).GetGetMethod();
-        static MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
+        public static FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
+        public static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
 
         static HarmonyPatches()
         {
@@ -102,24 +94,17 @@ namespace ExpandedRoofing
 
             // Allow roof frames to be built above things (e.g. trees)
             harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
-        }
 
-        public static bool FirstBlockingThingPrefix(Blueprint __instance)
-        {
-            ThingDef thingDef = __instance.def.entityDefToBuild as ThingDef;
-            if (thingDef?.HasComp(typeof(CompAddRoof)) == true) return false;
-            return true;
+            // Customize RoofGrid ICellBoolGiver
+            //harmony.Patch(AccessTools.Property(typeof(RoofGrid), nameof(RoofGrid.Color)).GetGetMethod(), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofGridColorDetour)), null);
+            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.GetCellExtraColor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofGridExtraColorDetour)), null);
         }
-
-        /*public static bool BlocksFramePlacementPrefix(Blueprint blue, Thing t)
-        {
-            ThingDef thingDef = blue.def.entityDefToBuild as ThingDef;
-            if (thingDef?.HasComp(typeof(CompProperties_AddRoof)) == true) return false;
-            return true;
-        }*/
 
         public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
+            FieldInfo FI_GlowGrid_map = AccessTools.Field(typeof(GlowGrid), "map");
+            MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(Helper), nameof(Helper.CheckTransparency));
+
             List<CodeInstruction> instructionList = instructions.ToList();
             int i;
             for (i = 0; i < instructionList.Count; i++)
@@ -133,9 +118,6 @@ namespace ExpandedRoofing
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
                     yield return new CodeInstruction(OpCodes.Ldloca, 0);
                     yield return new CodeInstruction(OpCodes.Call, MI_CheckTransparency);
-                    //yield return new CodeInstruction(OpCodes.Stloc_0);
-                    //yield return new CodeInstruction(OpCodes.Ldloc_0);
-                    //yield return new CodeInstruction(OpCodes.Ldc_R4, 1f);
                     Label @continue = il.DefineLabel();
                     yield return new CodeInstruction(OpCodes.Brfalse, @continue);
                     yield return new CodeInstruction(OpCodes.Ldloc_0);
@@ -159,9 +141,11 @@ namespace ExpandedRoofing
 
         public static IEnumerable<CodeInstruction> RegenerateTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
+            MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
+            MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(Helper), nameof(Helper.SkipRoofRendering));
+
             List<CodeInstruction> instructionList = instructions.ToList();
-            int i;
-            for (i = 0; i < instructionList.Count; i++)
+            for (int i = 0; i < instructionList.Count; i++)
             {
                 yield return instructionList[i];
                 if (instructionList[i].opcode == OpCodes.Callvirt && instructionList[i].operand == MI_RoofAt)
@@ -191,5 +175,33 @@ namespace ExpandedRoofing
             }
         }
 
+        public static bool FirstBlockingThingPrefix(Blueprint __instance)
+        {
+            ThingDef thingDef = __instance.def.entityDefToBuild as ThingDef;
+            if (thingDef?.HasComp(typeof(CompAddRoof)) == true) return false;
+            return true;
+        }
+
+        // NOTE: consider transpiling for performance.
+        public static FieldInfo FI = AccessTools.Field(typeof(RoofGrid), "roofGrid");
+        public static bool RoofGridExtraColorDetour(RoofGrid __instance, int index, Color __result)
+        {
+            // RISK: avoiding null checks.
+            //ushort roofValue = Traverse.Create(__instance).Property("roofGrid", new object[] { index }).GetValue<ushort>();
+            //ushort[] roofGrid = Traverse.Create(__instance).Property("roofGrid").GetValue<ushort[]>();
+            ushort[] roofGrid = (ushort[])FI.GetValue(__instance);
+            if (roofGrid[index] == RoofDefOf.RoofSolar.shortHash)
+                __result = Color.cyan;
+            else if (roofGrid[index] == RoofDefOf.RoofTransparent.shortHash)
+                __result = Color.yellow;
+            else if (roofGrid[index] == RoofDefOf.ThickStoneRoof.shortHash)
+                __result = Color.green;
+            else if (roofGrid[index] == RimWorld.RoofDefOf.RoofRockThick.shortHash)
+                __result = Color.gray;
+            else
+                __result = Color.white;
+
+            return false;
+        }
     }
 }
