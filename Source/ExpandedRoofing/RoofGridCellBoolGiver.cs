@@ -8,6 +8,7 @@ using Harmony;
 
 namespace ExpandedRoofing
 {
+    [StaticConstructorOnStartup]
     class RoofGridCellBoolGiver
     {
         static readonly Color LightGray = new Color(0.4f, 0.4f, 0.4f);
