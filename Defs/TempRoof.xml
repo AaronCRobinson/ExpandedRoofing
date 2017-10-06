@@ -14,13 +14,13 @@
         <enabled>false</enabled>
       </damageData>
     </graphicData>
-	<uiIconPath>UI/Designators/BuildRoofAreaExpand</uiIconPath>
-	<blueprintGraphicData>
+    <uiIconPath>UI/Designators/BuildRoofAreaExpand</uiIconPath>
+    <blueprintGraphicData>
       <graphicClass>Graphic_Single</graphicClass>
       <texPath>Things/Special/TerrainBlueprint</texPath>
       <shaderType>MetaOverlay</shaderType>
     </blueprintGraphicData>
-	<leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+    <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
     <altitudeLayer>BuildingOnTop</altitudeLayer>
     <passability>Standable</passability>
     <blockWind>true</blockWind>
@@ -39,10 +39,10 @@
     <canOverlapZones>true</canOverlapZones>
     <drawerType>MapMeshAndRealTime</drawerType>
     <building>
-	  <isInert>true</isInert>
-	  <ignoreNeedsPower>true</ignoreNeedsPower>
-	  <canPlaceOverWall>true</canPlaceOverWall>
-	  <isEdifice>false</isEdifice>
+      <isInert>true</isInert>
+      <ignoreNeedsPower>true</ignoreNeedsPower>
+      <canPlaceOverWall>true</canPlaceOverWall>
+      <isEdifice>false</isEdifice>
     </building>
     <comps>
       <li Class="CompProperties_Forbiddable"/>
@@ -61,7 +61,7 @@
     </costList>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_AddRoof">
-      	<roofDef>RoofTransparent</roofDef>
+        <roofDef>RoofTransparent</roofDef>
       </li>
     </comps>
     <uiIconPath>UI/Designators/BuildRoofAreaGlass</uiIconPath>
@@ -91,7 +91,7 @@
     </graphicData>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_AddRoof">
-      	<roofDef>RoofSolar</roofDef>
+        <roofDef>RoofSolar</roofDef>
       </li>
     </comps>
     <uiIconPath>UI/Designators/BuildRoofSolarArea</uiIconPath>
@@ -113,10 +113,10 @@
     <costList>
       <Steel>8</Steel>
     </costList>
-    <costStuffCount>50</costStuffCount>
+    <costStuffCount>20</costStuffCount>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_AddRoof">
-      	<roofDef>ThickStoneRoof</roofDef>
+        <roofDef>ThickStoneRoof</roofDef>
       </li>
     </comps>
     <researchPrerequisites>

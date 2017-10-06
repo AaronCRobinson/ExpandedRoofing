@@ -32,6 +32,7 @@
     </modExtensions>
   </RoofDef>
 
+  <!-- This is basically an abstract but attribute will lead to errors...-->
   <RoofDef Name="ThickStoneRoofBase">
     <defName>ThickStoneRoof</defName>
     <label>thick stone roof</label>
@@ -49,26 +50,32 @@
 
   <RoofDef ParentName="ThickStoneRoofBase">
     <defName>JadeThickStoneRoof</defName>
+    <label>jade thick stone roof</label>
   </RoofDef>
 
   <RoofDef ParentName="ThickStoneRoofBase">
     <defName>SandstoneThickStoneRoof</defName>
+    <label>sandstone thick stone roof</label>
   </RoofDef>
 
   <RoofDef ParentName="ThickStoneRoofBase">
     <defName>GraniteThickStoneRoof</defName>
+    <label>granite thick stone roof</label>
   </RoofDef>
 
   <RoofDef ParentName="ThickStoneRoofBase">
     <defName>LimestoneThickStoneRoof</defName>
+    <label>limestone thick stone roof</label>
   </RoofDef>
 
   <RoofDef ParentName="ThickStoneRoofBase">
     <defName>SlateThickStoneRoof</defName>
+    <label>slate thick stone roof</label>
   </RoofDef>
 
   <RoofDef ParentName="ThickStoneRoofBase">
     <defName>MarbleThickStoneRoof</defName>
+    <label>marble thick stone roof</label>
   </RoofDef>
 
 

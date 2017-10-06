@@ -2,14 +2,13 @@
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEngine;
 using Verse;
 using RimWorld;
 using Harmony;
 
 namespace ExpandedRoofing
 {
-    static class Helper
+    static class TraspileHelper
     {
         public static bool CheckTransparency(GlowGrid gg, Map map, IntVec3 c, ref float num)
         {
@@ -68,6 +67,15 @@ namespace ExpandedRoofing
         {
             return roofDef == RoofDefOf.RoofTransparent;
         }
+
+        public static bool IsBuildableThickRoof(IntVec3 cell, Map map)
+        {
+            // NOTE: do not need to check if `isThickRoof` b\c we already know it is
+            if (cell.GetRoof(map) != RimWorld.RoofDefOf.RoofRockThick)
+                return true;
+            return false;
+        }
+
     }
 
     [StaticConstructorOnStartup]
@@ -95,15 +103,14 @@ namespace ExpandedRoofing
             // Allow roof frames to be built above things (e.g. trees)
             harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
 
-            // Customize RoofGrid ICellBoolGiver
-            //harmony.Patch(AccessTools.Property(typeof(RoofGrid), nameof(RoofGrid.Color)).GetGetMethod(), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofGridColorDetour)), null);
-            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.GetCellExtraColor)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofGridExtraColorDetour)), null);
+            // Fix infestation under buildable thick roofs
+            harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetScoreAtTranspiler)));
         }
 
         public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             FieldInfo FI_GlowGrid_map = AccessTools.Field(typeof(GlowGrid), "map");
-            MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(Helper), nameof(Helper.CheckTransparency));
+            MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.CheckTransparency));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             int i;
@@ -135,14 +142,14 @@ namespace ExpandedRoofing
             if (curRoof != null && def != curRoof)
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
-                if (roofExt != null) Helper.DoLeavings(curRoof, roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
+                if (roofExt != null) TraspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
             }
         }
 
         public static IEnumerable<CodeInstruction> RegenerateTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
-            MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(Helper), nameof(Helper.SkipRoofRendering));
+            MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.SkipRoofRendering));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
@@ -182,26 +189,30 @@ namespace ExpandedRoofing
             return true;
         }
 
-        // NOTE: consider transpiling for performance.
-        public static FieldInfo FI = AccessTools.Field(typeof(RoofGrid), "roofGrid");
-        public static bool RoofGridExtraColorDetour(RoofGrid __instance, int index, Color __result)
+        public static IEnumerable<CodeInstruction> GetScoreAtTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
-            // RISK: avoiding null checks.
-            //ushort roofValue = Traverse.Create(__instance).Property("roofGrid", new object[] { index }).GetValue<ushort>();
-            //ushort[] roofGrid = Traverse.Create(__instance).Property("roofGrid").GetValue<ushort[]>();
-            ushort[] roofGrid = (ushort[])FI.GetValue(__instance);
-            if (roofGrid[index] == RoofDefOf.RoofSolar.shortHash)
-                __result = Color.cyan;
-            else if (roofGrid[index] == RoofDefOf.RoofTransparent.shortHash)
-                __result = Color.yellow;
-            else if (roofGrid[index] == RoofDefOf.ThickStoneRoof.shortHash)
-                __result = Color.green;
-            else if (roofGrid[index] == RimWorld.RoofDefOf.RoofRockThick.shortHash)
-                __result = Color.gray;
-            else
-                __result = Color.white;
+            MethodInfo MI_IsBuildableThickroof = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.IsBuildableThickRoof));
+            List<CodeInstruction> instructionList = instructions.ToList();
+            int i;
+            for (i = 0; i < instructionList.Count - 2; i++)
+            {
+                if (instructionList[i + 2].opcode == OpCodes.Ldc_I4_6)
+                    break;
+                yield return instructionList[i];
+            }
 
-            return false;
+            yield return new CodeInstruction(OpCodes.Ldarg_0); // cell
+            yield return new CodeInstruction(OpCodes.Ldarg_1); // map
+            yield return new CodeInstruction(OpCodes.Call, MI_IsBuildableThickroof);
+            Label @continue = il.DefineLabel();
+            yield return new CodeInstruction(OpCodes.Brfalse, @continue);
+            yield return new CodeInstruction(OpCodes.Ldc_R4, 0f);
+            yield return new CodeInstruction(OpCodes.Ret);
+            instructionList[i].labels.Add(@continue);
+
+            for (; i < instructionList.Count; i++)
+                yield return instructionList[i];
         }
+        
     }
 }
