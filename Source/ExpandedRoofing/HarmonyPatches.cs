@@ -8,6 +8,7 @@ using Harmony;
 
 namespace ExpandedRoofing
 {
+
     static class TraspileHelper
     {
         public static bool CheckTransparency(GlowGrid gg, Map map, IntVec3 c, ref float num)
@@ -81,7 +82,7 @@ namespace ExpandedRoofing
     [StaticConstructorOnStartup]
     internal class HarmonyPatches
     {
-        public static FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
+        //public static FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
         public static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
 
         static HarmonyPatches()
@@ -92,22 +93,25 @@ namespace ExpandedRoofing
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
 
             // correct lighting for plant growth
-            harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameGlowTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PlantLightingFix)));
 
             // set roof to return materials
-            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetRoofPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofLeavings)), null);
 
             // fix lighting inside rooms with transparent roof  
-            harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(RegenerateTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
 
             // Allow roof frames to be built above things (e.g. trees)
             harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
 
             // Fix infestation under buildable thick roofs
-            harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GetScoreAtTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThickRoofInfestationFix)));
+
+            // Reset CompMaintainable when building repaired
+            harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
         }
 
-        public static IEnumerable<CodeInstruction> GameGlowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static IEnumerable<CodeInstruction> PlantLightingFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             FieldInfo FI_GlowGrid_map = AccessTools.Field(typeof(GlowGrid), "map");
             MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.CheckTransparency));
@@ -136,7 +140,7 @@ namespace ExpandedRoofing
             for (i += 1 ; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
         }
 
-        public static void SetRoofPrefix(RoofGrid __instance, IntVec3 c, RoofDef def)
+        public static void RoofLeavings(RoofGrid __instance, IntVec3 c, RoofDef def)
         {
             RoofDef curRoof = __instance.RoofAt(c);
             if (curRoof != null && def != curRoof)
@@ -146,7 +150,7 @@ namespace ExpandedRoofing
             }
         }
 
-        public static IEnumerable<CodeInstruction> RegenerateTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static IEnumerable<CodeInstruction> TransparentRoofLightingOverlayFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
             MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.SkipRoofRendering));
@@ -185,11 +189,12 @@ namespace ExpandedRoofing
         public static bool FirstBlockingThingPrefix(Blueprint __instance)
         {
             ThingDef thingDef = __instance.def.entityDefToBuild as ThingDef;
-            if (thingDef?.HasComp(typeof(CompAddRoof)) == true) return false;
+            //if (thingDef?.HasComp(typeof(CompAddRoof)) == true) return false;
+            if (thingDef.GetCompProperties<CompProperties_CustomRoof>() != null) return false;
             return true;
         }
 
-        public static IEnumerable<CodeInstruction> GetScoreAtTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static IEnumerable<CodeInstruction> ThickRoofInfestationFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             MethodInfo MI_IsBuildableThickroof = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.IsBuildableThickRoof));
             List<CodeInstruction> instructionList = instructions.ToList();
@@ -214,5 +219,11 @@ namespace ExpandedRoofing
                 yield return instructionList[i];
         }
         
+        public static void BuildingRepairedPostfix(Building b)
+        {
+            CompMaintainable comp = b.GetComp<CompMaintainable>();
+            if (comp != null)
+                comp.ticksSinceMaintain = 0;
+        }
     }
 }

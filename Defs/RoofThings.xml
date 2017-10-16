@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-  <ThingDef Name="TempRoof" Abstract="True">
+  <ThingDef Name="RoofThing" Abstract="True">
     <thingClass>Building</thingClass>
     <category>Building</category>
     <soundImpactDefault>BulletImpactMetal</soundImpactDefault>
     <graphicData>
       <graphicClass>Graphic_Single</graphicClass>
-      <texPath>Things/Mote/TempRoof</texPath>
-      <shaderType>MetaOverlay</shaderType>
+      <texPath>Transparent</texPath>
+      <shaderType>None</shaderType>
       <damageData>
         <!--  no damage marks -->
         <enabled>false</enabled>
@@ -49,7 +49,7 @@
     </comps>
   </ThingDef>
 
-  <ThingDef ParentName="TempRoof">
+  <ThingDef ParentName="RoofThing">
     <defName>RoofTransparentFraming</defName>
     <label>transparent roofing</label>
     <description>Transparent roofing lets the light through, but keeps the weather out!</description>
@@ -60,7 +60,8 @@
       <Steel>1</Steel>
     </costList>
     <comps>
-      <li Class="ExpandedRoofing.CompProperties_AddRoof">
+      <li Class="ExpandedRoofing.CompProperties_CustomRoof">
+        <compClass>ExpandedRoofing.CompCustomRoof</compClass>
         <roofDef>RoofTransparent</roofDef>
       </li>
     </comps>
@@ -70,12 +71,12 @@
     </researchPrerequisites>
   </ThingDef>
 
-  <ThingDef ParentName="TempRoof">
+  <ThingDef ParentName="RoofThing">
     <defName>RoofSolarFraming</defName>
     <label>solar roofing</label>
     <description>Solar roofing generates power on your roof.  Requires a Solar Controller to function.</description>
     <statBases>
-      <WorkToBuild>1000</WorkToBuild>
+      <WorkToBuild>800</WorkToBuild>
     </statBases>
     <costList>
       <Steel>4</Steel>
@@ -90,7 +91,8 @@
       </damageData>
     </graphicData>
     <comps>
-      <li Class="ExpandedRoofing.CompProperties_AddRoof">
+      <li Class="ExpandedRoofing.CompProperties_CustomRoof">
+        <compClass>ExpandedRoofing.CompCustomRoof</compClass>
         <roofDef>RoofSolar</roofDef>
       </li>
     </comps>
@@ -100,12 +102,13 @@
     </researchPrerequisites>
   </ThingDef>
 
-  <ThingDef ParentName="TempRoof">
+  <ThingDef ParentName="RoofThing">
     <defName>ThickStoneRoofFraming</defName>
     <label>thick stone roofing</label>
     <description>Provides a thick roofing to keep drop pods out.</description>
     <statBases>
-      <WorkToBuild>4000</WorkToBuild>
+      <MaxHitPoints>500</MaxHitPoints>
+      <WorkToBuild>2200</WorkToBuild>
     </statBases>
     <stuffCategories>
       <li>Stony</li>
@@ -115,8 +118,14 @@
     </costList>
     <costStuffCount>20</costStuffCount>
     <comps>
-      <li Class="ExpandedRoofing.CompProperties_AddRoof">
+      <li Class="ExpandedRoofing.CompProperties_CustomRoof">
+        <compClass>ExpandedRoofing.CompMaintainableRoof</compClass>
         <roofDef>ThickStoneRoof</roofDef>
+      </li>
+      <li Class="CompProperties_Maintainable">
+        <ticksHealthy>360000</ticksHealthy>
+        <ticksNeedsMaintenance>300000</ticksNeedsMaintenance>
+        <damagePerTickRare>1</damagePerTickRare>
       </li>
     </comps>
     <researchPrerequisites>

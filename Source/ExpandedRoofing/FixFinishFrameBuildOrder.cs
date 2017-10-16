@@ -19,8 +19,8 @@ namespace ExpandedRoofing
                 Predicate<Thing> extra = (Thing t) => {
                     if (t.def.defName.EndsWith("Framing_Frame"))
                     {
-                        return RoofCollapseUtility.WithinRangeOfRoofHolder(t.InteractionCell, t.Map) &&
-                               RoofCollapseUtility.ConnectedToRoofHolder(t.InteractionCell, t.Map, true);
+                        return RoofCollapseUtility.WithinRangeOfRoofHolder(t.Position, t.Map) &&
+                               RoofCollapseUtility.ConnectedToRoofHolder(t.Position, t.Map, true);
                     }
                     return true;
                 };

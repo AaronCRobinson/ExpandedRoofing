@@ -31,6 +31,7 @@ namespace ExpandedRoofing
             def = MI_NewFrameDef_Thing.Invoke(null, new object[] { thingDef }) as ThingDef;
             InjectedDefHasher.GiveShortHasToDef(def, typeof(ThingDef));
             if (thingDef.MadeFromStuff) def.stuffCategories = thingDef.stuffCategories;
+            def.selectable = true; // fix selectability
             DefDatabase<ThingDef>.Add(def);
         }
     }

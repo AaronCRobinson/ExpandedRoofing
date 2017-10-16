@@ -60,7 +60,7 @@
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="InjectedDefHasher.cs" />
     <Compile Include="DefOf.cs" />
-    <Compile Include="ExpandedRoofing.cs" />
+    <Compile Include="Comps.cs" />
     <Compile Include="ModSettings.cs" />
     <Compile Include="ModWindowHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
