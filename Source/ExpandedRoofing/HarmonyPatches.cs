@@ -189,8 +189,7 @@ namespace ExpandedRoofing
         public static bool FirstBlockingThingPrefix(Blueprint __instance)
         {
             ThingDef thingDef = __instance.def.entityDefToBuild as ThingDef;
-            //if (thingDef?.HasComp(typeof(CompAddRoof)) == true) return false;
-            if (thingDef.GetCompProperties<CompProperties_CustomRoof>() != null) return false;
+            if (thingDef?.GetCompProperties<CompProperties_CustomRoof>() != null) return false;
             return true;
         }
 
