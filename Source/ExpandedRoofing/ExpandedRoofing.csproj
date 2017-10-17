@@ -62,9 +62,9 @@
     <Compile Include="DefOf.cs" />
     <Compile Include="Comps.cs" />
     <Compile Include="ModSettings.cs" />
-    <Compile Include="ModWindowHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoofGridCellBoolGiver.cs" />
+    <Compile Include="SettingsHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
