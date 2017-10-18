@@ -108,7 +108,7 @@
     <description>Provides a thick roofing to keep drop pods out.</description>
     <statBases>
       <MaxHitPoints>500</MaxHitPoints>
-      <WorkToBuild>2200</WorkToBuild>
+      <WorkToBuild>1800</WorkToBuild>
     </statBases>
     <stuffCategories>
       <li>Stony</li>

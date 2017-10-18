@@ -34,6 +34,9 @@ namespace ExpandedRoofing
         public CompProperties_CustomRoof Props { get => (CompProperties_CustomRoof)this.props; }
         private ThingDef Stuff { get => this.parent.Stuff; }
 
+        // NOTE: this thing should be invisible, therefore blank label
+        public override string TransformLabel(string label) => "";
+
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);

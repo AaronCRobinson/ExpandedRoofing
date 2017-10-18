@@ -33,6 +33,8 @@ namespace ExpandedRoofing
             this.roofDef = rDef;
         }
 
+        //public override string Label => this.roofDef.label;
+
         public override BuildableDef PlacingDef
         {
             get
