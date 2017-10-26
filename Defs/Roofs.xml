@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Roofs>
+<Defs>
 
   <RoofDef>
     <defName>RoofTransparent</defName>
@@ -78,5 +78,4 @@
     <label>marble thick stone roof</label>
   </RoofDef>
 
-
-</Roofs>
+</Defs>

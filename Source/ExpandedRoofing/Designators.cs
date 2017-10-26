@@ -115,11 +115,11 @@ namespace ExpandedRoofing
 
     public class Designator_AreaNoThickRoof : Designator_AreaNoRoof
     {
-        public Designator_AreaNoThickRoof() : base(DesignateMode.Add)
+        public Designator_AreaNoThickRoof() : base()
         {
             this.defaultLabel = "DesignatorAreaNoThickRoof".Translate();
             this.defaultDesc = "DesignatorAreaNoThickRoofDesc".Translate();
-            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofAreaOn", true);
+            this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofArea", true);
             this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
             this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
             this.soundSucceeded = SoundDefOf.DesignateAreaAdd;
@@ -128,18 +128,12 @@ namespace ExpandedRoofing
         public override AcceptanceReport CanDesignateCell(IntVec3 c)
         {
             if (!c.InBounds(base.Map))
-            {
                 return false;
-            }
             if (c.Fogged(base.Map))
-            {
                 return false;
-            }
             bool flag = base.Map.areaManager.NoRoof[c];
             /*if (this.mode == DesignateMode.Add)
-            {
-                return !flag;
-            }*/
+                return !flag;*/
             return !flag;
         }
 

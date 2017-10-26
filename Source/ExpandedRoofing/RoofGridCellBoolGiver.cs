@@ -9,7 +9,7 @@ using Harmony;
 namespace ExpandedRoofing
 {
     [StaticConstructorOnStartup]
-    class RoofGridCellBoolGiver
+    public class RoofGridCellBoolGiver
     {
         static readonly Color LightGray = new Color(0.4f, 0.4f, 0.4f);
         static readonly Color DarkGray = new Color(0.6f, 0.6f, 0.6f);
@@ -23,27 +23,29 @@ namespace ExpandedRoofing
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.roofgridcellboolgiver");
             // Customize RoofGrid ICellBoolGiver
             harmony.Patch(AccessTools.Property(typeof(RoofGrid), nameof(RoofGrid.Color)).GetGetMethod(), new HarmonyMethod(typeof(RoofGridCellBoolGiver), nameof(RoofGridColorDetour)), null);
-            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.GetCellExtraColor)), null, null, new HarmonyMethod(typeof(RoofGridCellBoolGiver), nameof(RoofGridExtraColorTranspiler)));
+            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.GetCellExtraColor)), null, null, new HarmonyMethod(typeof(RoofGridCellBoolGiver).GetMethod(nameof(RoofGridCellBoolGiver.RoofGridExtraColorDetour))));
         }
 
-        static bool RoofGridColorDetour(RoofGrid __instance, ref Color __result)
+        public static bool RoofGridColorDetour(RoofGrid __instance, ref Color __result)
         {
             __result = Color.white;
             return false;
         }
 
         // NOTE: detouring here via transpiler
-        static IEnumerable<CodeInstruction> RoofGridExtraColorTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> RoofGridExtraColorDetour(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
-            MethodInfo MI_GetCellExtraColor = AccessTools.Method(typeof(RoofGridCellBoolGiver), nameof(RoofGridCellBoolGiver.GetCellExtraColor));
-            List<CodeInstruction> instructionList = instructions.ToList();
-            for (int i = 2; i < 6; i++)
-                yield return instructionList[i];
+            FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
+            MethodInfo MI_GetCellExtraColor = typeof(RoofGridCellBoolGiver).GetMethod(nameof(RoofGridCellBoolGiver.GetCellExtraColor));
+            yield return new CodeInstruction(OpCodes.Ldarg_0);
+            yield return new CodeInstruction(OpCodes.Ldfld, FI_RoofGrid_roofGrid);
+            yield return new CodeInstruction(OpCodes.Ldarg_1);
+            yield return new CodeInstruction(OpCodes.Ldelem_U2);
             yield return new CodeInstruction(OpCodes.Call, MI_GetCellExtraColor);
             yield return new CodeInstruction(OpCodes.Ret);
         }
 
-        static Color GetCellExtraColor(ushort roofCell)
+        public static Color GetCellExtraColor(ushort roofCell)
         {
             if (roofCell == RimWorld.RoofDefOf.RoofConstructed.shortHash)
                 return LightGreen; 
@@ -56,7 +58,7 @@ namespace ExpandedRoofing
             if (roofCell == RimWorld.RoofDefOf.RoofRockThick.shortHash)
                 return DarkGray;
             // Assuming all other roofs are ThickStoneRoof
-            return Color.green;
+            return Color.magenta;
         }
     }
 }

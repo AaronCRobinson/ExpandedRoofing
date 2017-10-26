@@ -1,4 +1,4 @@
-<ResearchProjectDefs>
+<Defs>
 
 	<ResearchProjectDef>
 		<defName>TransparentRoofProduction</defName>
@@ -65,4 +65,4 @@
 		<researchViewY>0</researchViewY>
 	</ResearchProjectDef>
 
-</ResearchProjectDefs>
+</Defs>

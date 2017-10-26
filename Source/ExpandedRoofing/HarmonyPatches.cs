@@ -82,7 +82,6 @@ namespace ExpandedRoofing
     [StaticConstructorOnStartup]
     internal class HarmonyPatches
     {
-        //public static FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
         public static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
 
         static HarmonyPatches()
@@ -93,7 +92,7 @@ namespace ExpandedRoofing
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
 
             // correct lighting for plant growth
-            harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(PlantLightingFix)));
+            harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches).GetMethod(nameof(PlantLightingFix))));
 
             // set roof to return materials
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofLeavings)), null);
@@ -122,10 +121,9 @@ namespace ExpandedRoofing
             int i;
             for (i = 0; i < instructionList.Count; i++)
             {
-                yield return instructionList[i];
-                if (instructionList[i].opcode == OpCodes.Ret)
+                if (instructionList[i].opcode == OpCodes.Ldarg_2)
                 {
-                    yield return new CodeInstruction(OpCodes.Ldarg_0) { labels = instructionList[++i].labels };
+                    yield return new CodeInstruction(OpCodes.Ldarg_0) { labels = instructionList[i].labels };
                     yield return new CodeInstruction(OpCodes.Dup);
                     yield return new CodeInstruction(OpCodes.Ldfld, FI_GlowGrid_map);
                     yield return new CodeInstruction(OpCodes.Ldarg_1);
@@ -138,8 +136,9 @@ namespace ExpandedRoofing
                     yield return new CodeInstruction(instructionList[i].opcode, instructionList[i].operand) { labels = { @continue } };
                     break;
                 }
+                yield return instructionList[i];
             }
-            for (i += 1 ; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
+            for (i += 1; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
         }
 
         public static void RoofLeavings(RoofGrid __instance, IntVec3 c, RoofDef def)

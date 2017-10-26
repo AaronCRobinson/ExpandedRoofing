@@ -14,7 +14,7 @@
         <enabled>false</enabled>
       </damageData>
     </graphicData>
-    <uiIconPath>UI/Designators/BuildRoofAreaExpand</uiIconPath>
+    <uiIconPath>UI/Designators/BuildRoofArea</uiIconPath>
     <blueprintGraphicData>
       <graphicClass>Graphic_Single</graphicClass>
       <texPath>Things/Special/TerrainBlueprint</texPath>
@@ -40,7 +40,6 @@
     <drawerType>MapMeshAndRealTime</drawerType>
     <building>
       <isInert>true</isInert>
-      <ignoreNeedsPower>true</ignoreNeedsPower>
       <canPlaceOverWall>true</canPlaceOverWall>
       <isEdifice>false</isEdifice>
     </building>
