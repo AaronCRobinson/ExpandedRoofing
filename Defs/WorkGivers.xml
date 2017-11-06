@@ -11,6 +11,8 @@
     <priorityInType>90</priorityInType>
     <verb>perform roof maintenance on</verb>
     <gerund>performing roof maintenance on</gerund>
+    <scanThings>false</scanThings>
+    <scanCells>true</scanCells>
     <requiredCapacities>
       <li>Manipulation</li>
     </requiredCapacities>
