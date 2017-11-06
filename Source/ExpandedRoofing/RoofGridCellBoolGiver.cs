@@ -45,6 +45,7 @@ namespace ExpandedRoofing
             yield return new CodeInstruction(OpCodes.Ret);
         }
 
+        // TODO: tweak.
         public static Color GetCellExtraColor(ushort roofCell)
         {
             if (roofCell == RimWorld.RoofDefOf.RoofConstructed.shortHash)

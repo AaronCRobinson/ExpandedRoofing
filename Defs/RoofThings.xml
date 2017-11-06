@@ -60,7 +60,6 @@
     </costList>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
-        <compClass>ExpandedRoofing.CompCustomRoof</compClass>
         <roofDef>RoofTransparent</roofDef>
       </li>
     </comps>
@@ -91,7 +90,6 @@
     </graphicData>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
-        <compClass>ExpandedRoofing.CompCustomRoof</compClass>
         <roofDef>RoofSolar</roofDef>
       </li>
     </comps>
@@ -119,13 +117,7 @@
     <tickerType>Rare</tickerType>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
-        <compClass>ExpandedRoofing.CompMaintainableRoof</compClass>
         <roofDef>ThickStoneRoof</roofDef>
-      </li>
-      <li Class="CompProperties_Maintainable">
-        <ticksHealthy>360000</ticksHealthy>
-        <ticksNeedsMaintenance>300000</ticksNeedsMaintenance>
-        <damagePerTickRare>1</damagePerTickRare>
       </li>
     </comps>
     <researchPrerequisites>

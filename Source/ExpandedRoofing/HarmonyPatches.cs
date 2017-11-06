@@ -22,10 +22,7 @@ namespace ExpandedRoofing
             return false;
         }
 
-        private static int KillFinalize(int count)
-        {
-            return GenMath.RoundRandom((float)count * 0.5f);
-        }
+        private static int KillFinalize(int count) => GenMath.RoundRandom((float)count * 0.5f);
 
         // NOTE: consider destruction mode for better spawning
         public static void DoLeavings(RoofDef curRoof, ThingDef spawnerDef, Map map, CellRect leavingsRect)
@@ -64,18 +61,11 @@ namespace ExpandedRoofing
 
         }
 
-        public static bool SkipRoofRendering(RoofDef roofDef)
-        {
-            return roofDef == RoofDefOf.RoofTransparent;
-        }
+        public static bool SkipRoofRendering(RoofDef roofDef) => (roofDef == RoofDefOf.RoofTransparent);
 
-        public static bool IsBuildableThickRoof(IntVec3 cell, Map map)
-        {
-            // NOTE: do not need to check if `isThickRoof` b\c we already know it is
-            if (cell.GetRoof(map) != RimWorld.RoofDefOf.RoofRockThick)
-                return true;
-            return false;
-        }
+        // NOTE: do not need to check if `isThickRoof` b\c we already know it is
+        // TODO: look at consolidating this method
+        public static bool IsBuildableThickRoof(IntVec3 cell, Map map) => (cell.GetRoof(map) != RimWorld.RoofDefOf.RoofRockThick);
 
     }
 
@@ -101,7 +91,7 @@ namespace ExpandedRoofing
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
 
             // Allow roof frames to be built above things (e.g. trees)
-            harmony.Patch(AccessTools.Method(typeof(Blueprint), nameof(Blueprint.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
 
             // Fix infestation under buildable thick roofs
             harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThickRoofInfestationFix)));
@@ -187,10 +177,14 @@ namespace ExpandedRoofing
             }
         }
 
-        public static bool FirstBlockingThingPrefix(Blueprint __instance)
+        public static bool FirstBlockingThingPrefix(Thing constructible)
         {
-            ThingDef thingDef = __instance.def.entityDefToBuild as ThingDef;
-            if (thingDef?.GetCompProperties<CompProperties_CustomRoof>() != null) return false;
+            if (constructible is Blueprint)
+            {
+                Blueprint blueprint = constructible as Blueprint;
+                ThingDef thingDef = blueprint.def.entityDefToBuild as ThingDef;
+                if (thingDef?.GetCompProperties<CompProperties_CustomRoof>() != null) return false;
+            }
             return true;
         }
 

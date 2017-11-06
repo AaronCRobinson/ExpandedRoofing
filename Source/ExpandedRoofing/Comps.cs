@@ -29,41 +29,22 @@ namespace ExpandedRoofing
 
     }
 
+    // DEPRECATED: leave for a releases, as it will clean up any bad roofs created during different versions
     public class CompMaintainableRoof : ThingComp
     {
-        public CompProperties_CustomRoof Props { get => (CompProperties_CustomRoof)this.props; }
-        private ThingDef Stuff { get => this.parent.Stuff; }
-
-        // NOTE: this thing should be invisible, therefore blank label
-        public override string TransformLabel(string label) => "";
-
-        public override void PostSpawnSetup(bool respawningAfterLoad)
+        // DEPRECATED - CLEAN UP: Destroy these things 
+        public override void CompTick()
         {
-            base.PostSpawnSetup(respawningAfterLoad);
-            if (!respawningAfterLoad)
-            {
-                RoofDef roofDef = this.Props.roofDef;
-                // set roofdef for thickroofs
-                if (this.Stuff != null)
-                    roofDef = DefDatabase<RoofDef>.GetNamed($"{this.Stuff.defName.Replace("Blocks", "")}ThickStoneRoof", false);
-                this.parent.Map.roofGrid.SetRoof(this.parent.Position, roofDef);
-                MoteMaker.PlaceTempRoof(this.parent.Position, this.parent.Map);
-            }
+            base.CompTick();
+            // auto delete
+            if (!this.parent.Destroyed) this.parent.Destroy();
         }
-
-        public override void PostDestroy(DestroyMode mode, Map previousMap)
-        {
-            base.PostDestroy(mode, previousMap);
-            this.parent.Map.roofCollapseBuffer.MarkToCollapse(this.parent.InteractionCell);
-            //this.parent.Map.roofGrid.SetRoof(this.parent.Position, null);
-        }
-
     }
 
     public class CompProperties_CustomRoof : CompProperties
     {
         public RoofDef roofDef;
-        //public CompProperties_AddRoof() => this.compClass = typeof(CompAddRoof);
+        public CompProperties_CustomRoof() => this.compClass = typeof(CompCustomRoof);
     }
 
     class RoofExtension : DefModExtension
