@@ -36,7 +36,7 @@
   <RoofDef Name="ThickStoneRoofBase">
     <defName>ThickStoneRoof</defName>
     <label>thick stone roof</label>
-    <description>Thick stone roofing. Helps keep out the drop pods.</description>
+    <description>Thick stone roofing. Helps keep out the drop pods and mortar rounds.</description>
     <isThickRoof>true</isThickRoof>
     <isNatural>false</isNatural>
     <filthLeaving>BuildingRubble</filthLeaving> <!-- CollapsedRocks -->

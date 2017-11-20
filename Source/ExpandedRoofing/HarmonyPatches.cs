@@ -90,16 +90,11 @@ namespace ExpandedRoofing
             // fix lighting inside rooms with transparent roof  
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
 
-            // Allow roof frames to be built above things (e.g. trees)
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.FirstBlockingThing)), new HarmonyMethod(typeof(HarmonyPatches), nameof(FirstBlockingThingPrefix)), null);
-
             // Fix infestation under buildable thick roofs
             harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThickRoofInfestationFix)));
 
             // Reset CompMaintainable when building repaired
             harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
-
-            harmony.Patch(AccessTools.Method(typeof(MouseoverReadout), nameof(MouseoverReadout.MouseoverReadoutOnGUI)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(SkipThingsWithEmptyLabels)));
         }
 
         public static IEnumerable<CodeInstruction> PlantLightingFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -177,17 +172,6 @@ namespace ExpandedRoofing
             }
         }
 
-        public static bool FirstBlockingThingPrefix(Thing constructible)
-        {
-            if (constructible is Blueprint)
-            {
-                Blueprint blueprint = constructible as Blueprint;
-                ThingDef thingDef = blueprint.def.entityDefToBuild as ThingDef;
-                if (thingDef?.GetCompProperties<CompProperties_CustomRoof>() != null) return false;
-            }
-            return true;
-        }
-
         public static IEnumerable<CodeInstruction> ThickRoofInfestationFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             MethodInfo MI_IsBuildableThickroof = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.IsBuildableThickRoof));
@@ -220,49 +204,5 @@ namespace ExpandedRoofing
                 comp.ticksSinceMaintain = 0;
         }
 
-        public static IEnumerable<CodeInstruction> SkipThingsWithEmptyLabels(IEnumerable<CodeInstruction> instructions)
-        {
-            //MethodInfo MI_ThingListGetItem = typeof(List<Thing>).GetProperties().First(p => p.GetIndexParameters().Any(pi => pi.GetType() == typeof(int))).GetGetMethod();
-            MethodInfo MI_ThingList_GetItem = AccessTools.Method(typeof(List<Thing>), "get_Item");
-            MethodInfo MI_Thing_LabelMouseover = AccessTools.Property(typeof(Thing), nameof(Thing.LabelMouseover)).GetGetMethod();
-            MethodInfo MI_String_Length = AccessTools.Property(typeof(string), nameof(string.Length)).GetGetMethod();
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                if (instructionList[i].opcode == OpCodes.Callvirt && instructionList[i].operand == MI_ThingList_GetItem)
-                {
-                    yield return instructionList[i++];
-                    // get local thing local index
-                    var localIdx = instructionList[i].operand;
-                    // get to the end of the if
-                    do
-                        yield return instructionList[i++];
-                    while (instructionList[i].opcode != OpCodes.Bne_Un);
-
-                    // fix break point ordering...
-                    i++; // skipping unhelpful break (bne.un)
-                    instructionList[i].opcode = OpCodes.Beq;
-
-                    // save break point
-                    var skip = instructionList[i].operand;
-                    yield return instructionList[i++];
-
-                    // insert new break
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, localIdx);
-                    yield return new CodeInstruction(OpCodes.Callvirt, MI_Thing_LabelMouseover);
-                    yield return new CodeInstruction(OpCodes.Call, MI_String_Length);
-                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-                    yield return new CodeInstruction(OpCodes.Beq, skip);
-
-                    // remove extra label
-                    instructionList[i].labels.Clear();
-                    yield return instructionList[i];
-                }
-                else
-                    yield return instructionList[i];
-            }
-
-        }
     }
 }

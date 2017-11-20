@@ -38,6 +38,7 @@
     <blockLight>false</blockLight>
     <canOverlapZones>true</canOverlapZones>
     <drawerType>MapMeshAndRealTime</drawerType>
+    <clearBuildingArea>false</clearBuildingArea>
     <building>
       <isInert>true</isInert>
       <canPlaceOverWall>true</canPlaceOverWall>

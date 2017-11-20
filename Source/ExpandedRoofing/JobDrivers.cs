@@ -17,10 +17,9 @@ namespace ExpandedRoofing
         {
             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
-            Toil maintenance = new Toil();
-            maintenance.initAction = delegate
+            Toil maintenance = new Toil()
             {
-                this.ticksToNextMaintenance = MaintenanceTicks;
+                initAction = () => this.ticksToNextMaintenance = MaintenanceTicks,
             };
             // NOTE: unlike repair, this only counts down once 
             maintenance.tickAction = delegate
@@ -38,8 +37,7 @@ namespace ExpandedRoofing
                 }
             };
             maintenance.FailOnCannotTouch(TargetIndex.A, PathEndMode.Touch);
-            
-            maintenance.WithEffect(base.TargetThingA.def.repairEffect, TargetIndex.A);
+            maintenance.WithEffect(EffecterDefOf.RoofWork, TargetIndex.A);
             maintenance.defaultCompleteMode = ToilCompleteMode.Never;
             yield return maintenance;
         }

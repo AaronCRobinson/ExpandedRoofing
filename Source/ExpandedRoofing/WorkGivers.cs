@@ -14,16 +14,15 @@ namespace ExpandedRoofing
 
         public override bool HasJobOnCell(Pawn pawn, IntVec3 c)
         {
-            bool result;
             if (c.IsForbidden(pawn))
-                result = false;
-            else
-            {
-                LocalTargetInfo target = c;
-                ReservationLayerDef ceiling = ReservationLayerDefOf.Ceiling;
-                result = pawn.CanReserve(target, 1, -1, ceiling, false) && pawn.CanReach(c, PathEndMode.Touch, pawn.NormalMaxDanger(), false, TraverseMode.ByPawn) && RoofCollapseUtility.WithinRangeOfRoofHolder(c, pawn.Map) && RoofCollapseUtility.ConnectedToRoofHolder(c, pawn.Map, true);
-            }
-            return result;
+                return false;
+            if (!pawn.CanReserve((LocalTargetInfo)c, 1, -1, ReservationLayerDefOf.Ceiling, false))
+                return false;
+            if (!pawn.CanReach(c, PathEndMode.Touch, pawn.NormalMaxDanger(), false, TraverseMode.ByPawn))
+                return false;
+            if (!pawn.Map.roofGrid.RoofAt(c).IsBuildableThickRoof())
+                return false;
+            return true;
         }
 
         public override Job JobOnCell(Pawn pawn, IntVec3 c) => new Job(JobDefOf.PerformRoofMaintenance, c);

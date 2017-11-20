@@ -95,7 +95,7 @@ namespace ExpandedRoofing
 
         public IEnumerable<IntVec3> MaintenanceRequired
         {
-            get => this.roofMaintenanceGrid.CurrentlyRequireMaintenance();
+            get => this.roofMaintenanceGrid.CurrentlyRequireMaintenance;
         }
 
     }
@@ -147,6 +147,7 @@ namespace ExpandedRoofing
         }
         public void Remove(IntVec3 c) => this.grid.Remove(map.cellIndices.CellToIndex(c));
         public void Reset(IntVec3 c) => this.grid[map.cellIndices.CellToIndex(c)] = 0;
+        public int GetValue(IntVec3 c) => this.grid[map.cellIndices.CellToIndex(c)];
 
         private IntVec3 GetIntVec3(int index) => this.map.cellIndices.IndexToCell(index);
 
@@ -161,11 +162,14 @@ namespace ExpandedRoofing
             });
         }
 
-        public IEnumerable<IntVec3> CurrentlyRequireMaintenance()
+        public IEnumerable<IntVec3> CurrentlyRequireMaintenance
         {
-            foreach(KeyValuePair<int, int> pair in this.grid)
-                if (pair.Value > minTicksBeforeMaintenance)
-                    yield return this.GetIntVec3(pair.Key);
+            get
+            {
+                foreach (KeyValuePair<int, int> pair in this.grid)
+                    if (pair.Value > minTicksBeforeMaintenance)
+                        yield return this.GetIntVec3(pair.Key);
+            }
         }
 
     }
