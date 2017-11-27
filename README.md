@@ -1,4 +1,4 @@
-# ExpandedRoofing [![RimWorld Beta 18](https://img.shields.io/badge/RimWorld-Alpha%2018-brightgreen.svg)](http://rimworldgame.com/)
+# ExpandedRoofing [![RimWorld Beta 18](https://img.shields.io/badge/RimWorld-Beta%2018-brightgreen.svg)](http://rimworldgame.com/)
 
 Adds customizable roofing, with transparent greenhouse roofing and photovoltaic solar roofing. Reworked from Vendan's original idea.
 
