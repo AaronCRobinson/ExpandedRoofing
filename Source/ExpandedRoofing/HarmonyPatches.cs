@@ -68,6 +68,13 @@ namespace ExpandedRoofing
         // TODO: look at consolidating this method
         public static bool IsBuildableThickRoof(IntVec3 cell, Map map) => (cell.GetRoof(map) != RimWorld.RoofDefOf.RoofRockThick);
 
+        // TODO: the current fix here does not reduce light that is traveling through transparet roofs
+        public static void FixRoofedPowerOutputFactor(CompPowerPlantSolar comp, IntVec3 c, ref int coveredCells)
+        {
+            RoofDef roofDef = comp.parent.Map.roofGrid.RoofAt(c);
+            if (roofDef != null && roofDef != RoofDefOf.RoofTransparent)
+                ++coveredCells;
+        }
     }
 
     [StaticConstructorOnStartup]
@@ -99,6 +106,8 @@ namespace ExpandedRoofing
 
             // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
+
+            harmony.Patch(AccessTools.Property(typeof(CompPowerPlantSolar), "RoofedPowerOutputFactor").GetGetMethod(true), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofOutputFactorFix)));
         }
 
         public static IEnumerable<CodeInstruction> PlantLightingFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -212,9 +221,9 @@ namespace ExpandedRoofing
         {
             List<CodeInstruction> instructionList = instructions.ToList();
 
-            int i, j;
+            int j;
             int insertIndex = 0, startIndex = 0, endIndex = 0 ;
-            for (i = 0; i < instructionList.Count; i++)
+            for (int i = 0; i < instructionList.Count; i++)
             {
                 if (startIndex == 0 && instructionList[i].opcode == OpCodes.Ldc_I4_3)
                 {
@@ -247,6 +256,48 @@ namespace ExpandedRoofing
             instructionList.InsertRange(insertIndex - count, swapRange);
 
             return instructionList;
+        }
+
+        public static IEnumerable<CodeInstruction> TransparentRoofOutputFactorFix(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo MI_FixRoofedPowerOutputFactor = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.FixRoofedPowerOutputFactor));
+            List<CodeInstruction> instructionList = instructions.ToList();
+            bool skipping = false;
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                if (skipping)
+                {
+                    if (instructionList[i].opcode == OpCodes.Add && instructionList[i + 1].opcode == OpCodes.Stloc_1)
+                    {
+                        i++;
+                        skipping = false;
+                    }
+                    continue;
+                }
+                else if (instructionList[i].opcode == OpCodes.Add && instructionList[i + 1].opcode == OpCodes.Stloc_0)
+                {
+                    yield return instructionList[i++];
+                    yield return instructionList[i++];
+                    yield return new CodeInstruction(OpCodes.Ldarg_0); // this (CompPowerPlantSolar)
+                    yield return new CodeInstruction(OpCodes.Ldloc_2); // c
+                    yield return new CodeInstruction(OpCodes.Ldloca, 1); // num2
+                    yield return new CodeInstruction(OpCodes.Call, MI_FixRoofedPowerOutputFactor);
+                    skipping = true;
+                }
+                else
+                    yield return instructionList[i];
+                
+            }
+
+            /*for (int i = 0; i < instructionList.Count; i++)
+            {
+                if (instructionList[i].opcode == OpCodes.Ldloc_0 && instructionList[i+1].opcode == OpCodes.Ldloc_1)
+                {
+                     
+                }
+                // consider breaking to not repeat inserting...
+                yield return instructionList[i];
+            }*/
         }
 
     }
