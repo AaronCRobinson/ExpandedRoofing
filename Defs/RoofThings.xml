@@ -115,7 +115,6 @@
       <Steel>8</Steel>
     </costList>
     <costStuffCount>20</costStuffCount>
-    <tickerType>Rare</tickerType>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
         <roofDef>ThickStoneRoof</roofDef>
