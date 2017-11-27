@@ -58,7 +58,6 @@
   <ItemGroup>
     <Compile Include="DynamicDefs.cs" />
     <Compile Include="FixFinishFrameBuildOrder.cs" />
-    <Compile Include="CompPowerPlantSolarController.cs" />
     <Compile Include="Designators.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="InjectedDefHasher.cs" />
@@ -67,6 +66,7 @@
     <Compile Include="JobDrivers.cs" />
     <Compile Include="ModSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RoofExtension.cs" />
     <Compile Include="RoofGridCellBoolGiver.cs" />
     <Compile Include="RoofHelper.cs" />
     <Compile Include="RoofMaintenance .cs" />
