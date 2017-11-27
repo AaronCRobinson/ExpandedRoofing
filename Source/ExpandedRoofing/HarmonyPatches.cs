@@ -27,6 +27,9 @@ namespace ExpandedRoofing
         // NOTE: consider destruction mode for better spawning
         public static void DoLeavings(RoofDef curRoof, ThingDef spawnerDef, Map map, CellRect leavingsRect)
         {
+            // TODO: remove next release -> cleans-up bug.
+            if (curRoof.defName == "ThickStoneRoof") return;
+
             ThingOwner<Thing> thingOwner = new ThingOwner<Thing>();
             ThingDef stuff = null;
             string stuffDefName = curRoof.defName.Replace("ThickStoneRoof", "");
@@ -46,19 +49,17 @@ namespace ExpandedRoofing
                 }
             }
 
-            // TODO: rewrite this later...
             List<IntVec3> list = leavingsRect.Cells.InRandomOrder(null).ToList<IntVec3>();
             int num = 0;
             while (thingOwner.Count > 0)
             {
                 if (!thingOwner.TryDrop(thingOwner[0], list[num], map, ThingPlaceMode.Near, out Thing thing, null))
                 {
-                    Log.Warning(string.Concat(new object[] { "Failed to place all leavings for destroyed thing ", curRoof, " at ", leavingsRect.CenterCell }));
+                    Log.Warning($"Failed to place all leavings for destroyed thing {curRoof} at {leavingsRect.CenterCell}");
                     return;
                 }
                 if (++num >= list.Count) num = 0;
             }
-
         }
 
         public static bool SkipRoofRendering(RoofDef roofDef) => (roofDef == RoofDefOf.RoofTransparent);
@@ -95,6 +96,9 @@ namespace ExpandedRoofing
 
             // Reset CompMaintainable when building repaired
             harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
+
+            // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
         }
 
         public static IEnumerable<CodeInstruction> PlantLightingFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -202,6 +206,47 @@ namespace ExpandedRoofing
             CompMaintainable comp = b.GetComp<CompMaintainable>();
             if (comp != null)
                 comp.ticksSinceMaintain = 0;
+        }
+
+        public static IEnumerable<CodeInstruction> FixClearBuildingArea(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+
+            int i, j;
+            int insertIndex = 0, startIndex = 0, endIndex = 0 ;
+            for (i = 0; i < instructionList.Count; i++)
+            {
+                if (startIndex == 0 && instructionList[i].opcode == OpCodes.Ldc_I4_3)
+                {
+                    j = i;
+                    while (instructionList[--j].opcode != OpCodes.Ldarg_1) continue;
+                    startIndex = j;
+                    j = i;
+                    while (instructionList[j++].opcode != OpCodes.Blt_Un) continue;
+                    endIndex = j+4; // values and returns
+                }
+                if (insertIndex == 0 && instructionList[i].opcode == OpCodes.Stloc_1)
+                {
+                    j = i;
+                    while (instructionList[--j].opcode != OpCodes.Ldloc_0) continue;
+                    insertIndex = j;
+                }
+                if (insertIndex != 0 && startIndex != 0)
+                    break;
+            }
+
+            int count = endIndex - startIndex;
+            List<CodeInstruction> swapRange = instructionList.GetRange(startIndex, count);
+            instructionList.RemoveRange(startIndex, count);
+
+            // handle labels
+            List<Label> swapLabels = swapRange[0].labels;
+            swapRange[0].labels = instructionList[startIndex].labels;
+            instructionList[startIndex].labels = swapLabels;
+
+            instructionList.InsertRange(insertIndex - count, swapRange);
+
+            return instructionList;
         }
 
     }

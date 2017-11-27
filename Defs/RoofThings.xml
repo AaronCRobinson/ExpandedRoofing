@@ -61,6 +61,7 @@
     </costList>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
+        <compClass>ExpandedRoofing.CompCustomRoof</compClass>
         <roofDef>RoofTransparent</roofDef>
       </li>
     </comps>
@@ -91,6 +92,7 @@
     </graphicData>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
+        <compClass>ExpandedRoofing.CompCustomRoof</compClass>
         <roofDef>RoofSolar</roofDef>
       </li>
     </comps>
@@ -117,6 +119,7 @@
     <costStuffCount>20</costStuffCount>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
+        <compClass>ExpandedRoofing.CompMaintainableRoof</compClass>
         <roofDef>ThickStoneRoof</roofDef>
       </li>
     </comps>

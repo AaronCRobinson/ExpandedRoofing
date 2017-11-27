@@ -29,22 +29,23 @@ namespace ExpandedRoofing
 
     }
 
-    // DEPRECATED: leave for a releases, as it will clean up any bad roofs created during different versions
-    public class CompMaintainableRoof : ThingComp
+    public class CompMaintainableRoof : CompCustomRoof
     {
-        // DEPRECATED - CLEAN UP: Destroy these things 
         public override void CompTick()
         {
-            base.CompTick();
-            // auto delete
-            if (!this.parent.Destroyed) this.parent.Destroy();
+            if (this.parent.Stuff != null)
+            {
+                RoofDef roofDef = DefDatabase<RoofDef>.GetNamed($"{this.parent.Stuff.defName.Replace("Blocks", "")}ThickStoneRoof", false);
+                this.parent.Map.roofGrid.SetRoof(this.parent.Position, roofDef);
+            }
+            base.CompTick(); // auto deletes
         }
     }
 
     public class CompProperties_CustomRoof : CompProperties
     {
         public RoofDef roofDef;
-        public CompProperties_CustomRoof() => this.compClass = typeof(CompCustomRoof);
+        //public CompProperties_CustomRoof() => this.compClass = typeof(CompCustomRoof);
     }
 
     class RoofExtension : DefModExtension
