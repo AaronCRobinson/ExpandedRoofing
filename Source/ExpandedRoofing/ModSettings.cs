@@ -2,6 +2,8 @@
 using Verse;
 using UnityEngine;
 using SettingsHelper;
+using System.Collections.Generic;
+using System;
 
 namespace ExpandedRoofing
 {
@@ -11,29 +13,44 @@ namespace ExpandedRoofing
         private const float wattagePerSolarPanel_default = 200f;
         public float solarController_maxOutput = maxOutput_default;
         public float solarController_wattagePerSolarPanel = wattagePerSolarPanel_default;
+        public bool glassLights = true;
 
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Values.Look(ref this.solarController_maxOutput, "solarController_maxOutput", maxOutput_default);
             Scribe_Values.Look(ref this.solarController_wattagePerSolarPanel, "solarController_wattagePerSolarPanel", wattagePerSolarPanel_default);
+            Scribe_Values.Look(ref this.glassLights, "glassLights", true);
         }
     }
 
     class ExpandedRoofingMod : Mod
     {
         public static ExpandedRoofingSettings settings;
-        
+
         // Used to detect 
         private const string dontTemptMe_ModName = "Don't Tempt Me!";
+        private const string glassLights_ModName = "Glass+Lights";
 
-        private bool dontTemptMe;
+        private bool dontTemptMe = false;
+        private static bool glassLights = false;
+
+        public static bool GlassLights { get => glassLights; set => glassLights = value; }
 
         public ExpandedRoofingMod(ModContentPack content) : base(content)
         {
             settings = GetSettings<ExpandedRoofingSettings>();
 
-            this.dontTemptMe = ModLister.AllInstalledMods.FirstOrDefault(m => m.Name == dontTemptMe_ModName)?.Active ?? false;
+            Dictionary<string, Action> modCheck = new Dictionary<string, Action>() {
+                { dontTemptMe_ModName, () => { dontTemptMe = true; } },
+                { glassLights_ModName, () => { glassLights = true; } }
+            };
+
+            //this.dontTemptMe = ModLister.AllInstalledMods.FirstOrDefault(m => m.Name == dontTemptMe_ModName)?.Active ?? false;
+
+            foreach (ModMetaData metaData in ModLister.AllInstalledMods)
+                if ( metaData.Active && modCheck.ContainsKey(metaData.Name) )
+                    modCheck[metaData.Name]();
         }
 
         public override string SettingsCategory() => "ER_ExpandedRoofing".Translate();
@@ -48,6 +65,7 @@ namespace ExpandedRoofing
                 listing_Standard.Begin(inRect);
                 listing_Standard.AddLabeledNumericalTextField<float>("ER_MaxOutputLabel".Translate(), ref settings.solarController_maxOutput);
                 listing_Standard.AddLabeledNumericalTextField<float>("ER_WattagePerSolarPanelLabel".Translate(), ref settings.solarController_wattagePerSolarPanel);
+                listing_Standard.AddLabeledCheckbox("ER_GlassLights".Translate(), ref settings.glassLights);
                 listing_Standard.End();
                 settings.Write();
             }

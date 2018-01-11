@@ -4,5 +4,6 @@
   <ER_ExpandedRoofing>Expanded Roofing</ER_ExpandedRoofing>
   <ER_MaxOutputLabel>Solar controller max output</ER_MaxOutputLabel>
   <ER_WattagePerSolarPanelLabel>Solar controller wattage per solar panel</ER_WattagePerSolarPanelLabel>
+  <ER_GlassLights>Swap glass for steel when 'Glass+Lights' mod installed</ER_GlassLights>
 
 </LanguageData>

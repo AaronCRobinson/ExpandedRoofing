@@ -108,6 +108,9 @@ namespace ExpandedRoofing
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
 
             harmony.Patch(AccessTools.Property(typeof(CompPowerPlantSolar), "RoofedPowerOutputFactor").GetGetMethod(true), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofOutputFactorFix)));
+
+            // NOTE: look for a better injection point
+            harmony.Patch(AccessTools.Method(typeof(Game), nameof(Game.FinalizeInit)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameInited)));
         }
 
         public static IEnumerable<CodeInstruction> PlantLightingFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -298,6 +301,35 @@ namespace ExpandedRoofing
                 // consider breaking to not repeat inserting...
                 yield return instructionList[i];
             }*/
+        }
+
+        private static MethodInfo MI_DefDatabase_Remove = AccessTools.Method(typeof(DefDatabase<ThingDef>), "Remove");
+
+        public static void GameInited()
+        {
+            if (ExpandedRoofingMod.GlassLights)
+            {
+                ThingDef glassDef = DefDatabase<ThingDef>.GetNamed("Glass"); //TODO
+                ThingDef framingDef = ThingDefOf.RoofTransparentFraming;
+
+                // error check
+                if (glassDef == null)
+                {
+                    Log.Error("ExpandedRoofing: Error with configuring defs with Glass+Lights");
+                    return;
+                }
+
+                MI_DefDatabase_Remove.Invoke(null, new object[] { ThingDefOf.RoofTransparentFraming });
+                framingDef.costList = new List<ThingCountClass>() { new ThingCountClass(glassDef, 1) };
+                DefDatabase<ThingDef>.Add(framingDef);
+
+                Log.Message("ExpandedRoofing: Glass+Lights configuration done.");
+
+                // TODO: easy way to avoid redoing this op. (fix this)
+                ExpandedRoofingMod.GlassLights = true;
+            }
+
+           
         }
 
     }
