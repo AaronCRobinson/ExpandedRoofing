@@ -142,6 +142,7 @@ namespace ExpandedRoofing
             for (i += 1; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
         }
 
+        // NOTE: solar roofing methods piggy back on RoofLeavings method
         public static void RoofLeavings(RoofGrid __instance, IntVec3 c, RoofDef def)
         {
             RoofDef curRoof = __instance.RoofAt(c);
@@ -149,7 +150,13 @@ namespace ExpandedRoofing
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
                 if (roofExt != null) TraspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
+
+                if (curRoof == RoofDefOf.RoofSolar) // removing solar roofing
+                    SolarRoofingTracker.Remove(c);
             }
+
+            if (def == RoofDefOf.RoofSolar) // adding solar roofing
+                SolarRoofingTracker.Add(c);
         }
 
         public static IEnumerable<CodeInstruction> TransparentRoofLightingOverlayFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -303,12 +310,19 @@ namespace ExpandedRoofing
             }*/
         }
 
-        private static MethodInfo MI_DefDatabase_Remove = AccessTools.Method(typeof(DefDatabase<ThingDef>), "Remove");
-
         public static void GameInited()
         {
+            // Handle disabling maintenance
+            if (!ExpandedRoofingMod.settings.roofMaintenance)
+            {
+                MethodInfo MI_DefDatabase_Remove = AccessTools.Method(typeof(DefDatabase<JobDef>), "Remove");
+                MI_DefDatabase_Remove.Invoke(null, new object[] { JobDefOf.PerformRoofMaintenance });
+            }
+
+            // Handle Glass+Lights intergration
             if (ExpandedRoofingMod.GlassLights)
             {
+                MethodInfo MI_DefDatabase_Remove = AccessTools.Method(typeof(DefDatabase<ThingDef>), "Remove");
                 ThingDef glassDef = DefDatabase<ThingDef>.GetNamed("Glass"); //TODO
                 ThingDef framingDef = ThingDefOf.RoofTransparentFraming;
 
@@ -328,7 +342,6 @@ namespace ExpandedRoofing
                 // TODO: easy way to avoid redoing this op. (fix this)
                 ExpandedRoofingMod.GlassLights = true;
             }
-
            
         }
 
