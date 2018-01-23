@@ -87,7 +87,12 @@ namespace ExpandedRoofing
             }
         }
 
-        public override void MapComponentTick() => roofMaintenanceGrid.Tick();
+        public override void MapComponentTick()
+        {
+            // TODO: quick & dirty method to allow disable of roof maintenance
+            if (ExpandedRoofingMod.settings.roofMaintenance)
+                roofMaintenanceGrid.Tick();
+        }
 
         public void AddMaintainableRoof(IntVec3 c) => this.roofMaintenanceGrid.Add(c);
         public void RemoveMaintainableRoof(IntVec3 c) => this.roofMaintenanceGrid.Remove(c);
