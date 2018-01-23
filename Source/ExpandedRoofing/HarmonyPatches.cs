@@ -150,13 +150,7 @@ namespace ExpandedRoofing
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
                 if (roofExt != null) TraspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
-
-                if (curRoof == RoofDefOf.RoofSolar) // removing solar roofing
-                    SolarRoofingTracker.Remove(c);
             }
-
-            if (def == RoofDefOf.RoofSolar) // adding solar roofing
-                SolarRoofingTracker.Add(c);
         }
 
         public static IEnumerable<CodeInstruction> TransparentRoofLightingOverlayFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
