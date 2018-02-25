@@ -33,6 +33,7 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 - Russian (by Garr Incorporated)
 - French (by Jozay)
 - Chinese (by Rosenmund and 不为人知的汉子)
+- Japanese (by mundane_m)
 
 ## Acknowledgements
 
