@@ -30,7 +30,7 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 ## Translations
 - English
 - Turkish (by Slevilex)
-- Russian (by Garr Incorporated)
+- Russian (by Garr Incorporated, updated by lex1975)
 - French (by Jozay)
 - Chinese (by Rosenmund and 不为人知的汉子)
 - Japanese (by mundane_m)

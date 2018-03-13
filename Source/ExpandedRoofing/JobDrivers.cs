@@ -28,6 +28,7 @@ namespace ExpandedRoofing
                 actor.skills.Learn(SkillDefOf.Construction, 0.2f, false); // NOTE: reduced
                 float statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed, true);
                 this.ticksToNextMaintenance -= statValue;
+                Log.Message($"{this.ticksToNextMaintenance}");
                 if (this.ticksToNextMaintenance <= 0f)
                 {
                     pawn.Map.GetComponent<RoofMaintenance_MapComponenent>().DoMaintenance(TargetA.Cell);
