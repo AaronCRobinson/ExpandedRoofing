@@ -22,7 +22,7 @@ namespace ExpandedRoofing
                 return false;
             if (!pawn.Map.roofGrid.RoofAt(c).IsBuildableThickRoof())
                 return false;
-            return true;
+            return pawn.Map.GetComponent<RoofMaintenance_MapComponenent>()?.MaintenanceNeeded(c) == true;
         }
 
         public override Job JobOnCell(Pawn pawn, IntVec3 c) => new Job(JobDefOf.PerformRoofMaintenance, c);

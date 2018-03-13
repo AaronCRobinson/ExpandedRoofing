@@ -30,7 +30,6 @@
     <placingDraggableDimensions>2</placingDraggableDimensions>
     <tickerType>Normal</tickerType>
     <rotatable>false</rotatable>
-    <selectable>false</selectable>
     <neverMultiSelect>true</neverMultiSelect>
     <!--<designationCategory>Structure</designationCategory>-->
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>

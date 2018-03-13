@@ -93,10 +93,13 @@ namespace ExpandedRoofing
         public void RemoveMaintainableRoof(IntVec3 c) => this.roofMaintenanceGrid.Remove(c);
         public void DoMaintenance(IntVec3 c) => this.roofMaintenanceGrid.Reset(c);
 
+        // TODO: rename this...
         public IEnumerable<IntVec3> MaintenanceRequired
         {
-            get => this.roofMaintenanceGrid.CurrentlyRequireMaintenance;
+            get => this.roofMaintenanceGrid.CurrentlyRequiresMaintenance;
         }
+
+        public bool MaintenanceNeeded(IntVec3 c) => this.roofMaintenanceGrid.MaintenanceNeeded(c);
 
     }
 
@@ -128,7 +131,6 @@ namespace ExpandedRoofing
 
         private void InitExistingMap()
         {
-            Log.Message("ExpandedRoofing: Need to initialize RoofMaintenanceGrid.");
             foreach (IntVec3 cell in this.map.AllCells)
             {
                 RoofDef roofDef = this.map.roofGrid.RoofAt(cell);
@@ -137,19 +139,23 @@ namespace ExpandedRoofing
             }
         }
 
+        private IntVec3 GetIntVec3(int index) => this.map.cellIndices.IndexToCell(index);
+        private int GetCell(IntVec3 c) => this.map.cellIndices.CellToIndex(c);
+
         public void Add(IntVec3 c)
         {
-            int ind = map.cellIndices.CellToIndex(c);
+            int ind = this.GetCell(c);
             if (!this.grid.ContainsKey(ind))
                 this.grid.Add(ind, 0);
             else
                 this.Reset(c);
         }
+
         public void Remove(IntVec3 c) => this.grid.Remove(map.cellIndices.CellToIndex(c));
         public void Reset(IntVec3 c) => this.grid[map.cellIndices.CellToIndex(c)] = 0;
-        public int GetValue(IntVec3 c) => this.grid[map.cellIndices.CellToIndex(c)];
+        //public int GetValue(IntVec3 c) => this.grid[map.cellIndices.CellToIndex(c)];
 
-        private IntVec3 GetIntVec3(int index) => this.map.cellIndices.IndexToCell(index);
+        public bool MaintenanceNeeded(IntVec3 c) => this.grid[this.GetCell(c)] > minTicksBeforeMaintenance;
 
         public void Tick()
         {
@@ -162,7 +168,7 @@ namespace ExpandedRoofing
             });
         }
 
-        public IEnumerable<IntVec3> CurrentlyRequireMaintenance
+        public IEnumerable<IntVec3> CurrentlyRequiresMaintenance
         {
             get
             {
