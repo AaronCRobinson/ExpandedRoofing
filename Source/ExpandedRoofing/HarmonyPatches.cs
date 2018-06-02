@@ -142,6 +142,7 @@ namespace ExpandedRoofing
             for (i += 1; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
         }
 
+        // NOTE: solar roofing methods piggy back on RoofLeavings method
         public static void RoofLeavings(RoofGrid __instance, IntVec3 c, RoofDef def)
         {
             RoofDef curRoof = __instance.RoofAt(c);
@@ -307,6 +308,14 @@ namespace ExpandedRoofing
 
         public static void GameInited()
         {
+            // Handle disabling maintenance
+            if (!ExpandedRoofingMod.settings.roofMaintenance)
+            {
+                MethodInfo MI_DefDatabase_Remove = AccessTools.Method(typeof(DefDatabase<JobDef>), "Remove");
+                MI_DefDatabase_Remove.Invoke(null, new object[] { JobDefOf.PerformRoofMaintenance });
+            }
+
+            // Handle Glass+Lights intergration
             if (ExpandedRoofingMod.GlassLights)
             {
                 ThingDef glassDef = DefDatabase<ThingDef>.GetNamed("Glass"); //TODO
@@ -328,7 +337,6 @@ namespace ExpandedRoofing
                 // TODO: easy way to avoid redoing this op. (fix this)
                 ExpandedRoofingMod.GlassLights = true;
             }
-
            
         }
 

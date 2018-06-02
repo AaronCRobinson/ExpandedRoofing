@@ -14,6 +14,7 @@ namespace ExpandedRoofing
         public float solarController_maxOutput = maxOutput_default;
         public float solarController_wattagePerSolarPanel = wattagePerSolarPanel_default;
         public bool glassLights = true;
+        public bool roofMaintenance = true;
 
         public override void ExposeData()
         {
@@ -21,6 +22,7 @@ namespace ExpandedRoofing
             Scribe_Values.Look(ref this.solarController_maxOutput, "solarController_maxOutput", maxOutput_default);
             Scribe_Values.Look(ref this.solarController_wattagePerSolarPanel, "solarController_wattagePerSolarPanel", wattagePerSolarPanel_default);
             Scribe_Values.Look(ref this.glassLights, "glassLights", true);
+            Scribe_Values.Look(ref this.roofMaintenance, "roofMaintenance", true);
         }
     }
 
@@ -66,6 +68,7 @@ namespace ExpandedRoofing
                 listing_Standard.AddLabeledNumericalTextField<float>("ER_MaxOutputLabel".Translate(), ref settings.solarController_maxOutput);
                 listing_Standard.AddLabeledNumericalTextField<float>("ER_WattagePerSolarPanelLabel".Translate(), ref settings.solarController_wattagePerSolarPanel);
                 listing_Standard.AddLabeledCheckbox("ER_GlassLights".Translate(), ref settings.glassLights);
+                listing_Standard.AddLabeledCheckbox("ER_RoofMaintenance".Translate(), ref settings.roofMaintenance);
                 listing_Standard.End();
                 settings.Write();
             }
