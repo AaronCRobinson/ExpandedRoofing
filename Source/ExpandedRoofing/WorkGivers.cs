@@ -12,7 +12,7 @@ namespace ExpandedRoofing
             return pawn.Map.GetComponent<RoofMaintenance_MapComponenent>()?.MaintenanceRequired;
         }
 
-        public override bool HasJobOnCell(Pawn pawn, IntVec3 c)
+        public override bool HasJobOnCell(Pawn pawn, IntVec3 c, bool forced = false)
         {
             if (c.IsForbidden(pawn))
                 return false;
@@ -25,7 +25,7 @@ namespace ExpandedRoofing
             return pawn.Map.GetComponent<RoofMaintenance_MapComponenent>()?.MaintenanceNeeded(c) == true;
         }
 
-        public override Job JobOnCell(Pawn pawn, IntVec3 c) => new Job(JobDefOf.PerformRoofMaintenance, c);
+        public override Job JobOnCell(Pawn pawn, IntVec3 c, bool forced = false) => new Job(JobDefOf.PerformRoofMaintenance, c);
 
     }
 

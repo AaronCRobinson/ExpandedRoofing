@@ -36,9 +36,9 @@ namespace ExpandedRoofing
             if(stuffDefName == "Jade") stuff = DefDatabase<ThingDef>.GetNamed(stuffDefName, false);
             else stuff = DefDatabase<ThingDef>.GetNamed($"Blocks{stuffDefName}", false);
 
-            List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(stuff, true);
+            List<ThingDefCountClass> thingCounts = spawnerDef.CostListAdjusted(stuff, true);
 
-            foreach (ThingCountClass curCntCls in thingCounts)
+            foreach (ThingDefCountClass curCntCls in thingCounts)
             {
                 int val = KillFinalize(curCntCls.count);
                 if (val > 0)
@@ -105,7 +105,8 @@ namespace ExpandedRoofing
             harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
 
             // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
+            // TODO
+            //harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
 
             harmony.Patch(AccessTools.Property(typeof(CompPowerPlantSolar), "RoofedPowerOutputFactor").GetGetMethod(true), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofOutputFactorFix)));
 
@@ -329,7 +330,7 @@ namespace ExpandedRoofing
                 }
 
                 MI_DefDatabase_Remove.Invoke(null, new object[] { ThingDefOf.RoofTransparentFraming });
-                framingDef.costList = new List<ThingCountClass>() { new ThingCountClass(glassDef, 1) };
+                framingDef.costList = new List<ThingDefCountClass>() { new ThingDefCountClass(glassDef, 1) };
                 DefDatabase<ThingDef>.Add(framingDef);
 
                 Log.Message("ExpandedRoofing: Glass+Lights configuration done.");

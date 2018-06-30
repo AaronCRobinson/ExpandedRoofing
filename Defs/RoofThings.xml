@@ -4,22 +4,16 @@
   <ThingDef Name="RoofThing" Abstract="True">
     <thingClass>Building</thingClass>
     <category>Building</category>
-    <soundImpactDefault>BulletImpactMetal</soundImpactDefault>
+    <soundImpactDefault>BulletImpact_Metal</soundImpactDefault>
     <graphicData>
       <graphicClass>Graphic_Single</graphicClass>
       <texPath>Transparent</texPath>
-      <shaderType>None</shaderType>
       <damageData>
         <!--  no damage marks -->
         <enabled>false</enabled>
       </damageData>
     </graphicData>
     <uiIconPath>UI/Designators/BuildRoofArea</uiIconPath>
-    <blueprintGraphicData>
-      <graphicClass>Graphic_Single</graphicClass>
-      <texPath>Things/Special/TerrainBlueprint</texPath>
-      <shaderType>MetaOverlay</shaderType>
-    </blueprintGraphicData>
     <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
     <altitudeLayer>BuildingOnTop</altitudeLayer>
     <passability>Standable</passability>
@@ -42,6 +36,9 @@
       <isInert>true</isInert>
       <canPlaceOverWall>true</canPlaceOverWall>
       <isEdifice>false</isEdifice>
+      <blueprintGraphicData>
+        <texPath>Things/Special/TerrainBlueprint</texPath>
+      </blueprintGraphicData>
     </building>
     <comps>
       <li Class="CompProperties_Forbiddable"/>
