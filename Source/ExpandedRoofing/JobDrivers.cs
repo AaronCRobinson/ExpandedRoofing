@@ -11,7 +11,7 @@ namespace ExpandedRoofing
 
         protected float ticksToNextMaintenance = 0f;
 
-        public override bool TryMakePreToilReservations() => this.pawn.Reserve(this.job.targetA, this.job, 1, -1, null);
+        public override bool TryMakePreToilReservations(bool errorOnFailed) => this.pawn.Reserve(this.job.targetA, this.job, 1, -1, null);
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
