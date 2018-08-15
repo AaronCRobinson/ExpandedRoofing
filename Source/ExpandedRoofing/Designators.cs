@@ -77,7 +77,7 @@ namespace ExpandedRoofing
                     if (val != null) stuff = (ThingDef)val;
                     Thing thing = ThingMaker.MakeThing((ThingDef)this.entDef, stuff);
                     thing.SetFactionDirect(Faction.OfPlayer);
-                    GenSpawn.Spawn(thing, c, base.Map, this.placingRot, false);
+                    GenSpawn.Spawn(thing, c, base.Map, this.placingRot);
                 }
             }
             else
@@ -120,9 +120,11 @@ namespace ExpandedRoofing
             this.defaultLabel = "DesignatorAreaNoThickRoof".Translate();
             this.defaultDesc = "DesignatorAreaNoThickRoofDesc".Translate();
             this.icon = ContentFinder<Texture2D>.Get("UI/Designators/NoRoofArea", true);
-            this.soundDragSustain = SoundDefOf.DesignateDragAreaAdd;
-            this.soundDragChanged = SoundDefOf.DesignateDragAreaAddChanged;
-            this.soundSucceeded = SoundDefOf.DesignateAreaAdd;
+            //this.hotKey = KeyBindingDefOf.Misc5;
+            this.soundDragSustain = SoundDefOf.Designate_DragAreaAdd;
+            this.soundDragChanged = null;
+            this.soundSucceeded = SoundDefOf.Designate_AreaAdd;
+            this.useMouseIcon = true;
         }
 
         public override AcceptanceReport CanDesignateCell(IntVec3 c)

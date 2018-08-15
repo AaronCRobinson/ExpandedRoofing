@@ -11,7 +11,7 @@ namespace ExpandedRoofing
 
         protected float ticksToNextMaintenance = 0f;
 
-        public override bool TryMakePreToilReservations() => this.pawn.Reserve(this.job.targetA, this.job, 1, -1, null);
+        public override bool TryMakePreToilReservations(bool errorOnFailed) => this.pawn.Reserve(this.job.targetA, this.job, 1, -1, null);
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
@@ -28,6 +28,7 @@ namespace ExpandedRoofing
                 actor.skills.Learn(SkillDefOf.Construction, 0.2f, false); // NOTE: reduced
                 float statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed, true);
                 this.ticksToNextMaintenance -= statValue;
+                Log.Message($"{this.ticksToNextMaintenance}");
                 if (this.ticksToNextMaintenance <= 0f)
                 {
                     pawn.Map.GetComponent<RoofMaintenance_MapComponenent>().DoMaintenance(TargetA.Cell);

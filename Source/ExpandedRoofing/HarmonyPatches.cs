@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -36,9 +37,9 @@ namespace ExpandedRoofing
             if(stuffDefName == "Jade") stuff = DefDatabase<ThingDef>.GetNamed(stuffDefName, false);
             else stuff = DefDatabase<ThingDef>.GetNamed($"Blocks{stuffDefName}", false);
 
-            List<ThingCountClass> thingCounts = spawnerDef.CostListAdjusted(stuff, true);
+            List<ThingDefCountClass> thingCounts = spawnerDef.CostListAdjusted(stuff, true);
 
-            foreach (ThingCountClass curCntCls in thingCounts)
+            foreach (ThingDefCountClass curCntCls in thingCounts)
             {
                 int val = KillFinalize(curCntCls.count);
                 if (val > 0)
@@ -62,7 +63,7 @@ namespace ExpandedRoofing
             }
         }
 
-        public static bool SkipRoofRendering(RoofDef roofDef) => (roofDef == RoofDefOf.RoofTransparent);
+        //public static bool SkipRoofRendering(RoofDef roofDef) => (roofDef == RoofDefOf.RoofTransparent);
 
         // NOTE: do not need to check if `isThickRoof` b\c we already know it is
         // TODO: look at consolidating this method
@@ -96,7 +97,8 @@ namespace ExpandedRoofing
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofLeavings)), null);
 
             // fix lighting inside rooms with transparent roof  
-            harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
+            //harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
+            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new Type[] { typeof(int) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayPostfix)));
 
             // Fix infestation under buildable thick roofs
             harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThickRoofInfestationFix)));
@@ -105,7 +107,8 @@ namespace ExpandedRoofing
             harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
 
             // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
-            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
+            // TODO
+            //harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
 
             harmony.Patch(AccessTools.Property(typeof(CompPowerPlantSolar), "RoofedPowerOutputFactor").GetGetMethod(true), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofOutputFactorFix)));
 
@@ -159,40 +162,12 @@ namespace ExpandedRoofing
                 SolarRoofingTracker.Add(c);
         }
 
-        public static IEnumerable<CodeInstruction> TransparentRoofLightingOverlayFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+
+        // WARNING: this may have side-effects at some point...
+        public static void TransparentRoofLightingOverlayPostfix(ref RoofDef __result)
         {
-            MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
-            MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.SkipRoofRendering));
-
-            List<CodeInstruction> instructionList = instructions.ToList();
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                yield return instructionList[i];
-                if (instructionList[i].opcode == OpCodes.Callvirt && instructionList[i].operand == MI_RoofAt)
-                {
-                    // NOTE: consider finding a better way to locate this...
-                    // make sure state by checking ops a few times
-                    yield return instructionList[++i];
-                    if (instructionList[i].opcode != OpCodes.Stloc_S) break;
-
-                    yield return instructionList[++i];
-                    if (instructionList[i].opcode != OpCodes.Ldloc_S) break;
-
-                    CodeInstruction load = new CodeInstruction(instructionList[i].opcode, instructionList[i].operand);
-
-                    yield return instructionList[++i];
-                    if (instructionList[i].opcode != OpCodes.Brfalse) break;
-
-                    yield return load;
-                    yield return new CodeInstruction(OpCodes.Call, MI_SkipRoofRendering);
-                    Label @continue = il.DefineLabel();
-                    yield return new CodeInstruction(OpCodes.Brtrue, @continue);
-                    while (instructionList[++i].opcode != OpCodes.Stloc_S) { yield return instructionList[i]; } // yield block
-                    yield return instructionList[i++];
-                    instructionList[i].labels.Add(@continue);
-                    yield return instructionList[i];
-                }
-            }
+            if (__result == RoofDefOf.RoofTransparent)
+                __result = null;
         }
 
         public static IEnumerable<CodeInstruction> ThickRoofInfestationFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
@@ -299,15 +274,6 @@ namespace ExpandedRoofing
                 
             }
 
-            /*for (int i = 0; i < instructionList.Count; i++)
-            {
-                if (instructionList[i].opcode == OpCodes.Ldloc_0 && instructionList[i+1].opcode == OpCodes.Ldloc_1)
-                {
-                     
-                }
-                // consider breaking to not repeat inserting...
-                yield return instructionList[i];
-            }*/
         }
 
         public static void GameInited()
@@ -334,7 +300,7 @@ namespace ExpandedRoofing
                 }
 
                 MI_DefDatabase_Remove.Invoke(null, new object[] { ThingDefOf.RoofTransparentFraming });
-                framingDef.costList = new List<ThingCountClass>() { new ThingCountClass(glassDef, 1) };
+                framingDef.costList = new List<ThingDefCountClass>() { new ThingDefCountClass(glassDef, 1) };
                 DefDatabase<ThingDef>.Add(framingDef);
 
                 Log.Message("ExpandedRoofing: Glass+Lights configuration done.");
