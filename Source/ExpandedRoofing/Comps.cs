@@ -57,7 +57,8 @@ namespace ExpandedRoofing
 
         //private CellBoolDrawer drawer; // TODO: consider static
         private int? netId;
-        public void SetNetId(int netId) => this.netId = netId;
+        public int NetId { get => (int)this.netId; set => this.netId = value; }
+        //public void SetNetId(int netId) => this.netId = netId;
         private float powerOut;
 
         public float WattagePerSolarPanel { get => ExpandedRoofingMod.settings.solarController_wattagePerSolarPanel; }
@@ -81,7 +82,7 @@ namespace ExpandedRoofing
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            SolarRoofingTracker.Add(this.parent);
+            SolarRoofingTracker.AddController(this.parent);
             // NOTE: do we really need the full grid?
             //this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
         }
@@ -145,6 +146,12 @@ namespace ExpandedRoofing
         public Color Color { get => CompPowerPlantSolarController.color; }
         //public bool GetCellBool(int index) => CompPowerPlantSolarController.solarRoof[index];
         public Color GetCellExtraColor(int index) => Color.white;
+
+        public override void PostDeSpawn(Map map)
+        {
+            base.PostDeSpawn(map);
+            SolarRoofingTracker.RemoveController(this.parent);
+        }
     }
 
 }

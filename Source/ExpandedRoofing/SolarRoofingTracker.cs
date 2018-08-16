@@ -30,14 +30,14 @@ namespace ExpandedRoofing
         }
 
         // used to add new SolarGridSets to cellSets. (Simple incremental keying)
-        public static int Add(this Dictionary<int, SolarGridSet> d, SolarGridSet s)
+        private static int Add(this Dictionary<int, SolarGridSet> d, SolarGridSet s)
         {
             int idx = cellSets.Count;
             d.Add(idx, s);
             return idx;
         }
 
-        public static void Add(IntVec3 cell)
+        public static void AddSolarCell(IntVec3 cell)
         {
             HashSet<int> found = new HashSet<int>();
             foreach (KeyValuePair<int, SolarGridSet> pair in cellSets)
@@ -54,7 +54,9 @@ namespace ExpandedRoofing
             }
 
             int idx = 0;
+#if DEBUG
             Log.Message($"{idx} -> case {found.Count()}");
+#endif
             switch (found.Count)
             {
                 case 0:
@@ -88,7 +90,7 @@ namespace ExpandedRoofing
 
                             cellSets[idx].controllers.Add(controller);
                             del.Add(controller);
-                            controller.TryGetComp<CompPowerPlantSolarController>().SetNetId(idx);
+                            controller.TryGetComp<CompPowerPlantSolarController>().NetId = idx;
                             @break = true;
                         }
                     }
@@ -99,29 +101,21 @@ namespace ExpandedRoofing
         }
 
         // TODO: move common logic to method.
-        public static void Remove(IntVec3 cell)
+        public static void RemoveSolarCell(IntVec3 cell)
         {
-            IntVec3 pos;
-            foreach (KeyValuePair<int, SolarGridSet> pair in cellSets)
+            foreach (SolarGridSet gs in cellSets.Values)
             {
-                // using cardinal because it will be faster...
-                for (int i = 0; i < 5; i++)
+                if (gs.set.Contains(cell))
                 {
-                    pos = cell + GenAdj.CardinalDirectionsAndInside[i];
-                    if (pair.Value.set.Contains(pos))
-                    {
-                        //cellSets.Remove(pos);
-                        pair.Value.set.Remove(pos);
-                        return;
-                    }
+                    gs.set.Remove(cell);
+                    return;
                 }
             }
-
             Log.Error($"ExpandedRoofing: SolarRoofingTracker.Remove on a bad cell ({cell}).");
         }
 
         // NOTE: ignoring case of controller connects to two grids...
-        public static void Add(Thing controller)
+        public static void AddController(Thing controller)
         {
             HashSet<IntVec3> connects = new HashSet<IntVec3>();
 
@@ -135,14 +129,15 @@ namespace ExpandedRoofing
                 {
                     pair.Value.controllers.Add(controller);
                     // this should never fail...
-                    controller.TryGetComp<CompPowerPlantSolarController>()?.SetNetId(pair.Key);
+                    controller.TryGetComp<CompPowerPlantSolarController>().NetId = pair.Key;
                     return;
                 }
             }
-            //isolatedControllers[controller.Position] = controller;
             isolatedControllers.Add(controller);
             return;
         }
+
+        public static void RemoveController(Thing controller) => cellSets[controller.TryGetComp<CompPowerPlantSolarController>().NetId].controllers.Remove(controller);
 
         public static SolarGridSet GetCellSets(int? netId) => netId != null ? cellSets[(int)netId] : null;
 
