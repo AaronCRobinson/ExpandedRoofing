@@ -40,9 +40,10 @@ Adds customizable roofing, with transparent greenhouse roofing and photovoltaic 
 Thank to Erdelf for getting me back on track and Xen for designator artwork.
 
 Special thanks to Pardeike's amazing non-destructive patching library, Harmony.
+
 <p align="center">
   <a href="https://github.com/pardeike/Harmony">
-    <img src="https://s24.postimg.org/58bl1rz39/logo.png" alt="Harmony" />
+    <img src="https://raw.githubusercontent.com/pardeike/Harmony/master/HarmonyLogo.png" alt="Harmony" width="128" />
   </a>
 </p>
 
