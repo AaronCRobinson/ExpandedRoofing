@@ -149,17 +149,19 @@ namespace ExpandedRoofing
         public static void RoofLeavings(RoofGrid __instance, IntVec3 c, RoofDef def)
         {
             RoofDef curRoof = __instance.RoofAt(c);
+            Map map = FI_RoofGrid_map.GetValue(__instance) as Map;
             if (curRoof != null && def != curRoof)
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
-                if (roofExt != null) TraspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, FI_RoofGrid_map.GetValue(__instance) as Map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
+                if (roofExt != null)
+                    TraspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
 
                 if (curRoof == RoofDefOf.RoofSolar) // removing solar roofing
-                    SolarRoofingTracker.RemoveSolarCell(c);
+                    map.GetComponent<SolarRoofing_MapComponent>().tracker.RemoveSolarCell(c);
             }
 
             if (def == RoofDefOf.RoofSolar) // adding solar roofing
-                SolarRoofingTracker.AddSolarCell(c);
+                map.GetComponent<SolarRoofing_MapComponent>().tracker.AddSolarCell(c);
         }
 
 

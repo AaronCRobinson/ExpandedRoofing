@@ -53,18 +53,16 @@ namespace ExpandedRoofing
     public class CompPowerPlantSolarController : CompPowerPlant//, ICellBoolGiver
     {
         private static readonly Color color = new Color(0.3f, 1f, 0.4f);
-        //public static bool[] solarRoof; // NOTE: find a way to stop reseting this...
 
         //private CellBoolDrawer drawer; // TODO: consider static
+        private float powerOut;
+        private SolarRoofingTracker solarRoofingTracker;
         private int? netId;
         public int NetId { get => (int)this.netId; set => this.netId = value; }
-        //public void SetNetId(int netId) => this.netId = netId;
-        private float powerOut;
-
         public float WattagePerSolarPanel { get => ExpandedRoofingMod.settings.solarController_wattagePerSolarPanel; }
         public float MaxOutput { get => netId == null ? 0 : ExpandedRoofingMod.settings.solarController_maxOutput; }
-        public int RoofCount { get => netId == null ? 0 : SolarRoofingTracker.GetCellSets(this.netId).RoofCount; }
-        public int ControllerCount { get => SolarRoofingTracker.GetCellSets(this.netId).ControllerCount; }
+        public int RoofCount { get => netId == null ? 0 : this.solarRoofingTracker.GetCellSets(this.netId).RoofCount; }
+        public int ControllerCount { get => this.solarRoofingTracker.GetCellSets(this.netId).ControllerCount; }
 
         protected override float DesiredPowerOutput
         {
@@ -82,7 +80,8 @@ namespace ExpandedRoofing
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            SolarRoofingTracker.AddController(this.parent);
+            this.solarRoofingTracker = this.parent.Map.GetComponent<SolarRoofing_MapComponent>().tracker;
+            this.solarRoofingTracker.AddController(this.parent);
             // NOTE: do we really need the full grid?
             //this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
         }
@@ -150,7 +149,7 @@ namespace ExpandedRoofing
         public override void PostDeSpawn(Map map)
         {
             base.PostDeSpawn(map);
-            SolarRoofingTracker.RemoveController(this.parent);
+            map.GetComponent<SolarRoofing_MapComponent>().tracker.RemoveController(this.parent);
         }
     }
 

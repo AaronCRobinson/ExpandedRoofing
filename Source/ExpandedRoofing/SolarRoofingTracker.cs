@@ -1,15 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using Harmony;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Verse;
+
+using static ExpandedRoofing.SolarRoofingTracker;
 
 namespace ExpandedRoofing
 {
-    // TODO: This will not work with multiple maps.
-    // MapComponent...
-    public static class SolarRoofingTracker
+    // TODO: consider consolidating MapComponents
+    public class SolarRoofing_MapComponent : MapComponent
     {
-        private static Dictionary<int, SolarGridSet> cellSets = new Dictionary<int, SolarGridSet>();
-        private static List<Thing> isolatedControllers = new List<Thing>();
+        public SolarRoofingTracker tracker;
+        public SolarRoofing_MapComponent(Map map) : base(map)
+        {
+            this.tracker = new SolarRoofingTracker(map);
+        }
+    }
+
+    public static class SolarRoofingTrackerHelper
+    {
+        // used to add new SolarGridSets to cellSets. (Simple incremental keying)
+        public static int AddSolarGrid(this Dictionary<int, SolarGridSet> d, SolarGridSet s)
+        {
+            int idx = d.Count;
+            d.Add(idx, s);
+            return idx;
+        }
+    }
+
+    // NOTE: no need for ExposeData (just recount when map is loaded -- not a long operation)
+    public class SolarRoofingTracker
+    {
+        private static readonly FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
 
         public class SolarGridSet
         {
@@ -29,15 +52,23 @@ namespace ExpandedRoofing
             public int ControllerCount { get => this.controllers.Count; }
         }
 
-        // used to add new SolarGridSets to cellSets. (Simple incremental keying)
-        private static int Add(this Dictionary<int, SolarGridSet> d, SolarGridSet s)
+        private Dictionary<int, SolarGridSet> cellSets = new Dictionary<int, SolarGridSet>();
+        private List<Thing> isolatedControllers = new List<Thing>();
+
+        public SolarRoofingTracker(Map map)
         {
-            int idx = cellSets.Count;
-            d.Add(idx, s);
-            return idx;
+            // use map to init
+            RoofDef[] roofGrid = FI_RoofGrid_roofGrid.GetValue(map.roofGrid) as RoofDef[];
+
+            for (int i = 0; i < roofGrid.Length; i++)
+                if (roofGrid[i] == RoofDefOf.RoofSolar)
+                    this.AddSolarCell(map.cellIndices.IndexToCell(i));
+
+            foreach (Thing controller in map.listerBuildings.AllBuildingsColonistOfDef(ThingDefOf.SolarController))
+                this.AddController(controller);
         }
 
-        public static void AddSolarCell(IntVec3 cell)
+        public void AddSolarCell(IntVec3 cell)
         {
             HashSet<int> found = new HashSet<int>();
             foreach (KeyValuePair<int, SolarGridSet> pair in cellSets)
@@ -60,7 +91,7 @@ namespace ExpandedRoofing
             switch (found.Count)
             {
                 case 0:
-                    idx = cellSets.Add(new SolarGridSet(cell));
+                    idx = cellSets.AddSolarGrid(new SolarGridSet(cell));
                     break;
                 case 1:
                     idx = found.First();
@@ -101,7 +132,7 @@ namespace ExpandedRoofing
         }
 
         // TODO: move common logic to method.
-        public static void RemoveSolarCell(IntVec3 cell)
+        public void RemoveSolarCell(IntVec3 cell)
         {
             foreach (SolarGridSet gs in cellSets.Values)
             {
@@ -115,7 +146,7 @@ namespace ExpandedRoofing
         }
 
         // NOTE: ignoring case of controller connects to two grids...
-        public static void AddController(Thing controller)
+        public void AddController(Thing controller)
         {
             HashSet<IntVec3> connects = new HashSet<IntVec3>();
 
@@ -137,9 +168,9 @@ namespace ExpandedRoofing
             return;
         }
 
-        public static void RemoveController(Thing controller) => cellSets[controller.TryGetComp<CompPowerPlantSolarController>().NetId].controllers.Remove(controller);
+        public void RemoveController(Thing controller) => cellSets[controller.TryGetComp<CompPowerPlantSolarController>().NetId].controllers.Remove(controller);
 
-        public static SolarGridSet GetCellSets(int? netId) => netId != null ? cellSets[(int)netId] : null;
+        public SolarGridSet GetCellSets(int? netId) => netId != null ? cellSets[(int)netId] : null;
 
     }
 }
