@@ -50,27 +50,28 @@ namespace ExpandedRoofing
         //public CompProperties_CustomRoof() => this.compClass = typeof(CompCustomRoof);
     }
 
-    public class CompPowerPlantSolarController : CompPowerPlant, ICellBoolGiver
+    public class CompPowerPlantSolarController : CompPowerPlant//, ICellBoolGiver
     {
         private static readonly Color color = new Color(0.3f, 1f, 0.4f);
-        public static bool[] solarRoof; // NOTE: find a way to stop reseting this...
+        //public static bool[] solarRoof; // NOTE: find a way to stop reseting this...
 
-        private CellBoolDrawer drawer; // TODO: consider static
-        private int roofCount = 0;
-        private HashSet<int> controllers;
-        public HashSet<int> solarRoofLooked;
+        //private CellBoolDrawer drawer; // TODO: consider static
+        private int? netId;
+        public void SetNetId(int netId) => this.netId = netId;
         private float powerOut;
 
         public float WattagePerSolarPanel { get => ExpandedRoofingMod.settings.solarController_wattagePerSolarPanel; }
-        public float MaxOutput { get => ExpandedRoofingMod.settings.solarController_maxOutput; }
+        public float MaxOutput { get => netId == null ? 0 : ExpandedRoofingMod.settings.solarController_maxOutput; }
+        public int RoofCount { get => netId == null ? 0 : SolarRoofingTracker.GetCellSets(this.netId).RoofCount; }
+        public int ControllerCount { get => SolarRoofingTracker.GetCellSets(this.netId).ControllerCount; }
 
         protected override float DesiredPowerOutput
         {
             get
             {
-                powerOut = 0;
-                if (this.controllers.Count > 0)
-                    powerOut = Mathf.Lerp(0f, WattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * ((float)this.roofCount / this.controllers.Count);
+                if (netId == null)
+                    return 0;
+                powerOut = Mathf.Lerp(0f, WattagePerSolarPanel, this.parent.Map.skyManager.CurSkyGlow) * ((float)this.RoofCount / this.ControllerCount);
                 if (powerOut > MaxOutput)
                     return MaxOutput;
                 return powerOut;
@@ -80,20 +81,12 @@ namespace ExpandedRoofing
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
+            SolarRoofingTracker.Add(this.parent);
             // NOTE: do we really need the full grid?
-            solarRoof = new bool[this.parent.Map.cellIndices.NumGridCells];
-            this.solarRoofLooked = new HashSet<int>();
-            this.controllers = new HashSet<int>();
-            this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
+            //this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
         }
 
-        public override void CompTick()
-        {
-            base.CompTick();
-            if (Gen.IsHashIntervalTick(this.parent, 30)) CalculateSolarGrid();
-        }
-
-        private void CalculateSolarGrid(bool draw = false)
+        /*private void CalculateSolarGrid(bool draw = false)
         {
             this.solarRoofLooked.Clear();
             this.controllers.Clear();
@@ -136,26 +129,22 @@ namespace ExpandedRoofing
             }
 
             if (draw) drawer.SetDirty();
-        }
+        }*/
 
         public override void PostDrawExtraSelectionOverlays()
         {
             base.PostDrawExtraSelectionOverlays();
-            CalculateSolarGrid(true);
-            drawer.MarkForDraw();
-            drawer.CellBoolDrawerUpdate();
+            //CalculateSolarGrid(true);
+            //drawer.MarkForDraw();
+            //drawer.CellBoolDrawerUpdate();
         }
 
-        public override string CompInspectStringExtra()
-        {
-            return $"{"SolarRoofArea".Translate()}: {this.roofCount.ToString("###0")}\n{base.CompInspectStringExtra()}";
-        }
+        public override string CompInspectStringExtra() => $"{"SolarRoofArea".Translate()}: {this.RoofCount.ToString("###0")}\n{base.CompInspectStringExtra()}";
 
         // ICellBoolGiver implementation
         public Color Color { get => CompPowerPlantSolarController.color; }
-        public bool GetCellBool(int index) => CompPowerPlantSolarController.solarRoof[index];
+        //public bool GetCellBool(int index) => CompPowerPlantSolarController.solarRoof[index];
         public Color GetCellExtraColor(int index) => Color.white;
-
     }
 
 }
