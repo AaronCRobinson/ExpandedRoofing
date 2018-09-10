@@ -11,8 +11,8 @@ namespace ExpandedRoofing
     [StaticConstructorOnStartup]
     public class RoofGridCellBoolGiver
     {
-        static readonly Color LightGray = new Color(0.4f, 0.4f, 0.4f);
-        static readonly Color DarkGray = new Color(0.6f, 0.6f, 0.6f);
+        static readonly Color ThinRockRoofColor = new Color(0.6f, 0.6f, 0.6f);
+        static readonly Color ThickRockRoofColor = new Color(0.75f, 0.375f, 0.25f);
         static readonly Color LightGreen = new Color(0.3f, 1f, 0.4f); // default color
 
         static RoofGridCellBoolGiver()
@@ -40,24 +40,37 @@ namespace ExpandedRoofing
             yield return new CodeInstruction(OpCodes.Ldarg_0);
             yield return new CodeInstruction(OpCodes.Ldfld, FI_RoofGrid_roofGrid);
             yield return new CodeInstruction(OpCodes.Ldarg_1);
-            yield return new CodeInstruction(OpCodes.Ldelem_U2);
+            yield return new CodeInstruction(OpCodes.Ldelem_Ref);
             yield return new CodeInstruction(OpCodes.Call, MI_GetCellExtraColor);
             yield return new CodeInstruction(OpCodes.Ret);
         }
 
-        // TODO: tweak.
-        public static Color GetCellExtraColor(ushort roofCell)
+        public static Color GetCellExtraColor(RoofDef roofCell)
         {
-            if (roofCell == RimWorld.RoofDefOf.RoofConstructed.shortHash)
-                return LightGreen; 
-            if (roofCell == RoofDefOf.RoofTransparent.shortHash)
+            if (roofCell == RimWorld.RoofDefOf.RoofConstructed)
+            {
+                return LightGreen;
+            }
+
+            else if (roofCell == RoofDefOf.RoofTransparent)
+            {
                 return Color.yellow;
-            if (roofCell == RoofDefOf.RoofSolar.shortHash)
+            }
+
+            else if (roofCell == RoofDefOf.RoofSolar)
+            {
                 return Color.cyan;
-            if (roofCell == RimWorld.RoofDefOf.RoofRockThin.shortHash)
-                return LightGray; 
-            if (roofCell == RimWorld.RoofDefOf.RoofRockThick.shortHash)
-                return DarkGray;
+            }
+
+            else if (roofCell == RimWorld.RoofDefOf.RoofRockThin)
+            {
+                return ThinRockRoofColor;
+            }
+
+            else if (roofCell == RimWorld.RoofDefOf.RoofRockThick)
+            {
+                return ThickRockRoofColor;
+            }
             // Assuming all other roofs are ThickStoneRoof
             return Color.magenta;
         }
