@@ -165,12 +165,13 @@ namespace ExpandedRoofing
         public void Tick()
         {
             // bucketing? kind of?
-            this.grid.Where(kp => Find.TickManager.TicksGame + kp.Key.HashOffset() % long_TickInterval == 0).Do( kp =>
+            List<KeyValuePair<int,int>> items = this.grid.Where(kp => Find.TickManager.TicksGame + kp.Key.HashOffset() % long_TickInterval == 0).ToList();
+            foreach(KeyValuePair<int,int> kp in items)
             {
                 this.grid[kp.Key] += 1;
                 if (this.grid[kp.Key] > minTicksBeforeMTBCollapses && Rand.MTBEventOccurs(3.5f, 60000f, long_TickInterval))
                     this.map.roofCollapseBuffer.MarkToCollapse(this.GetIntVec3(kp.Key));
-            });
+            }
         }
 
         public IEnumerable<IntVec3> CurrentlyRequiresMaintenance

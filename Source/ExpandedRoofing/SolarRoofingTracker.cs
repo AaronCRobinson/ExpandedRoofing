@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Verse;
-
 using static ExpandedRoofing.SolarRoofingTracker;
 
 namespace ExpandedRoofing
@@ -86,7 +85,7 @@ namespace ExpandedRoofing
 
             int idx = 0;
 #if DEBUG
-            Log.Message($"{idx} -> case {found.Count()}");
+            Log.Message($"SolarRoofingTracker.AddSolarCell: {idx} -> case {found.Count()}");
 #endif
             switch (found.Count)
             {

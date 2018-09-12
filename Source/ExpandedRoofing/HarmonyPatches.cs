@@ -83,6 +83,8 @@ namespace ExpandedRoofing
     {
         public static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
 
+        private static int SectionLayer_LightingOverlay__Regenerate__RoofDef__LocalIndex = AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)).GetMethodBody().LocalVariables.First(lvi => lvi.LocalType == typeof(RoofDef)).LocalIndex;
+
         static HarmonyPatches()
         {
 #if DEBUG
@@ -98,7 +100,6 @@ namespace ExpandedRoofing
 
             // fix lighting inside rooms with transparent roof  
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
-            //harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new Type[] { typeof(int) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayPostfix)));
 
             // Fix infestation under buildable thick roofs
             harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThickRoofInfestationFix)));
@@ -107,7 +108,7 @@ namespace ExpandedRoofing
             harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
 
             // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
-            //harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
+            harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
 
             harmony.Patch(AccessTools.Property(typeof(CompPowerPlantSolar), "RoofedPowerOutputFactor").GetGetMethod(true), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofOutputFactorFix)));
 
@@ -175,13 +176,12 @@ namespace ExpandedRoofing
             for (int i = 0; i < instructionList.Count; i++)
             {
                 yield return instructionList[i];
-                if (instructionList[i].opcode == OpCodes.Callvirt && instructionList[i].operand == MI_RoofAt)
+                if (instructionList[i].opcode == OpCodes.Stloc_S && instructionList[i].operand is LocalBuilder lb && lb.LocalIndex == SectionLayer_LightingOverlay__Regenerate__RoofDef__LocalIndex)
                 {
-                    // NOTE: consider finding a better way to locate this...
+#if DEBUG
+                    Log.Message("Patching TransparentRoof");
+#endif
                     // make sure state by checking ops a few times
-                    yield return instructionList[++i];
-                    if (instructionList[i].opcode != OpCodes.Stloc_S) break;
-
                     yield return instructionList[++i];
                     if (instructionList[i].opcode != OpCodes.Ldloc_S) break;
 
@@ -201,13 +201,6 @@ namespace ExpandedRoofing
                 }
             }
         }
-
-        // WARNING: this may have side-effects at some point...
-        /*public static void TransparentRoofLightingOverlayPostfix(ref RoofDef __result)
-        {
-            if (__result == RoofDefOf.RoofTransparent)
-                __result = null;
-        }*/
 
         public static IEnumerable<CodeInstruction> ThickRoofInfestationFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
@@ -241,6 +234,7 @@ namespace ExpandedRoofing
                 comp.ticksSinceMaintain = 0;
         }
 
+        // NOTE: this method is getting mighty ugly...
         public static IEnumerable<CodeInstruction> FixClearBuildingArea(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> instructionList = instructions.ToList();
@@ -265,7 +259,10 @@ namespace ExpandedRoofing
 #endif 
                     j = i;
                     while (instructionList[j++].opcode != OpCodes.Ble_Un) continue;
-                    endIndex = j+4; // values and returns
+                    j = j+4; // values and returns
+                    // keep going...
+                    while (instructionList[j++].opcode != OpCodes.Ldloc_0) continue;
+                    endIndex = j-1; // values and returns
 #if DEBUG
                     Log.Message($"endIndex: {endIndex}");
 #endif 
