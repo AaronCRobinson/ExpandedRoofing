@@ -17,21 +17,12 @@ namespace ExpandedRoofing
         }
     }
 
-    public static class SolarRoofingTrackerHelper
-    {
-        // used to add new SolarGridSets to cellSets. (Simple incremental keying)
-        public static int AddSolarGrid(this Dictionary<int, SolarGridSet> d, SolarGridSet s)
-        {
-            int idx = d.Count;
-            d.Add(idx, s);
-            return idx;
-        }
-    }
-
     // NOTE: no need for ExposeData (just recount when map is loaded -- not a long operation)
     public class SolarRoofingTracker
     {
         private static readonly FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofGrid), "roofGrid");
+        private static int nextId=0;
+        private int NextId { get => SolarRoofingTracker.nextId++; }
 
         public class SolarGridSet
         {
@@ -90,7 +81,9 @@ namespace ExpandedRoofing
             switch (found.Count)
             {
                 case 0:
-                    idx = cellSets.AddSolarGrid(new SolarGridSet(cell));
+                    SolarGridSet s = new SolarGridSet(cell);
+                    idx = NextId;
+                    cellSets.Add(idx, s);
                     break;
                 case 1:
                     idx = found.First();

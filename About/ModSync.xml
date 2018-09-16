@@ -2,11 +2,11 @@
 <ModSyncNinjaData>
   <ID>da411a34-76ea-42c8-b350-b8ddc07dccc1</ID>
   <ModName>Expanded Roofing</ModName>
-  <Version>0.19.1</Version>
+  <Version>0.19.2</Version>
   <SaveBreaking>False</SaveBreaking>
   <Host name="Direct">
     <AboutUri>https://raw.githubusercontent.com/AaronCRobinson/ExpandedRoofing/master/About/About.xml</AboutUri>
     <ModSyncUri>https://raw.githubusercontent.com/AaronCRobinson/ExpandedRoofing/master/About/ModSync.xml</ModSyncUri>
-    <DownloadUri>https://github.com/AaronCRobinson/ExpandedRoofing/releases/tag/v0.19.1</DownloadUri>
+    <DownloadUri>https://github.com/AaronCRobinson/ExpandedRoofing/releases/tag/v0.19.2</DownloadUri>
   </Host>
 </ModSyncNinjaData>
