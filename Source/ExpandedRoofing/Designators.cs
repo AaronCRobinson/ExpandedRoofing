@@ -35,13 +35,7 @@ namespace ExpandedRoofing
 
         //public override string Label => this.roofDef.label;
 
-        public override BuildableDef PlacingDef
-        {
-            get
-            {
-                return this.entDef;
-            }
-        }
+        public override BuildableDef PlacingDef { get => this.entDef; }
 
         public override AcceptanceReport CanDesignateCell(IntVec3 loc)
         {

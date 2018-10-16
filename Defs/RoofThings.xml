@@ -50,7 +50,7 @@
     <label>transparent roofing</label>
     <description>Transparent roofing lets the light through, but keeps the weather out!</description>
     <statBases>
-      <WorkToBuild>200</WorkToBuild>
+      <WorkToBuild>100</WorkToBuild>
     </statBases>
     <costList>
       <Steel>1</Steel>
@@ -72,7 +72,7 @@
     <label>solar roofing</label>
     <description>Solar roofing generates power on your roof.  Requires a Solar Controller to function.</description>
     <statBases>
-      <WorkToBuild>800</WorkToBuild>
+      <WorkToBuild>300</WorkToBuild>
     </statBases>
     <costList>
       <Steel>4</Steel>
@@ -104,15 +104,15 @@
     <description>Provides a thick roofing to keep drop pods out.</description>
     <statBases>
       <MaxHitPoints>500</MaxHitPoints>
-      <WorkToBuild>1800</WorkToBuild>
+      <WorkToBuild>500</WorkToBuild>
     </statBases>
     <stuffCategories>
       <li>Stony</li>
     </stuffCategories>
     <costList>
-      <Steel>8</Steel>
+      <Steel>5</Steel>
     </costList>
-    <costStuffCount>20</costStuffCount>
+    <costStuffCount>5</costStuffCount>
     <comps>
       <li Class="ExpandedRoofing.CompProperties_CustomRoof">
         <compClass>ExpandedRoofing.CompMaintainableRoof</compClass>
