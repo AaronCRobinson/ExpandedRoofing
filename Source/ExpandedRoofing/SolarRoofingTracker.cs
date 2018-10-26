@@ -94,7 +94,7 @@ namespace ExpandedRoofing
                     for (int i = 1; i < found.Count; i++)
                     {
                         cellSets[mergerKey].UnionWith(cellSets[found.ElementAt(i)]);
-                        cellSets.Remove(i);
+                        cellSets.Remove(found.ElementAt(i));
                     }
                     break;
             }
