@@ -60,6 +60,7 @@ namespace ExpandedRoofing
 
         public void AddSolarCell(IntVec3 cell)
         {
+            // grids found that connect to the new cell
             HashSet<int> found = new HashSet<int>();
             foreach (KeyValuePair<int, SolarGridSet> pair in cellSets)
             {
@@ -80,19 +81,24 @@ namespace ExpandedRoofing
 #endif
             switch (found.Count)
             {
-                case 0:
+                case 0: // new grid
                     SolarGridSet s = new SolarGridSet(cell);
                     idx = NextId;
                     cellSets.Add(idx, s);
                     break;
-                case 1:
+                case 1: // 1 match
                     idx = found.First();
                     cellSets[idx].set.Add(cell);
                     break;
                 default: // merger
                     int mergerKey = found.ElementAt(idx);
+                    cellSets[mergerKey].set.Add(cell);
                     for (int i = 1; i < found.Count; i++)
                     {
+                        foreach(Thing controller in cellSets[found.ElementAt(i)].controllers)
+                        {
+                            controller.TryGetComp<CompPowerPlantSolarController>().NetId = mergerKey;
+                        }
                         cellSets[mergerKey].UnionWith(cellSets[found.ElementAt(i)]);
                         cellSets.Remove(found.ElementAt(i));
                     }

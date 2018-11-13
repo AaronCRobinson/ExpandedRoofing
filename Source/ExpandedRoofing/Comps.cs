@@ -50,6 +50,7 @@ namespace ExpandedRoofing
         //public CompProperties_CustomRoof() => this.compClass = typeof(CompCustomRoof);
     }
 
+    // TODO: this netId is some bad caching...
     public class CompPowerPlantSolarController : CompPowerPlant//, ICellBoolGiver
     {
         private static readonly Color color = new Color(0.3f, 1f, 0.4f);
@@ -86,55 +87,9 @@ namespace ExpandedRoofing
             //this.drawer = new CellBoolDrawer(this, this.parent.Map.Size.x, this.parent.Map.Size.z);
         }
 
-        /*private void CalculateSolarGrid(bool draw = false)
-        {
-            this.solarRoofLooked.Clear();
-            this.controllers.Clear();
-            Queue<IntVec3> lookQueue = new Queue<IntVec3>();
-            this.roofCount = 0;
-            for (int i = 0; i < solarRoof.Length; i++) solarRoof[i] = false; // TODO: fix the need for this...
-
-            this.controllers.Add(this.parent.thingIDNumber);
-            for (int i = -1; i < this.parent.RotatedSize.x + 1; i++)
-                for (int j = -1; j < this.parent.RotatedSize.x + 1; j++)
-                    lookQueue.Enqueue(this.parent.Position + new IntVec3(i, 0, j));
-
-            Map map = this.parent.Map;
-            RoofGrid roofGrid = map.roofGrid;
-
-            while (lookQueue.Count > 0)
-            {
-                IntVec3 loc = lookQueue.Dequeue();
-                if (!loc.InBounds(map)) continue; // skip ahead if out of bounds
-
-                Building building = loc.GetFirstBuilding(map);
-                if (building?.def == ThingDefOf.SolarController && building.thingIDNumber != this.parent.thingIDNumber)
-                    if (!this.controllers.Contains(building.thingIDNumber))
-                        this.controllers.Add(building.thingIDNumber);
-
-                if (roofGrid.RoofAt(loc) == RoofDefOf.RoofSolar && !this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(loc)))
-                {
-                    this.roofCount++;
-                    solarRoof[map.cellIndices.CellToIndex(loc)] = true;
-
-                    foreach (IntVec3 cardinal in GenAdj.CardinalDirections)
-                    {
-                        IntVec3 iv3 = loc + cardinal;
-                        if (!this.solarRoofLooked.Contains(map.cellIndices.CellToIndex(iv3)))
-                            lookQueue.Enqueue(iv3);
-                    }
-
-                }
-                this.solarRoofLooked.Add(map.cellIndices.CellToIndex(loc));
-            }
-
-            if (draw) drawer.SetDirty();
-        }*/
-
         public override void PostDrawExtraSelectionOverlays()
         {
             base.PostDrawExtraSelectionOverlays();
-            //CalculateSolarGrid(true);
             //drawer.MarkForDraw();
             //drawer.CellBoolDrawerUpdate();
         }
