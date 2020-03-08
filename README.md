@@ -1,4 +1,4 @@
-# ExpandedRoofing [![RimWorld 1.0](https://img.shields.io/badge/RimWorld-1.0-green.svg?longCache=true&style=plastic)](http://rimworldgame.com/)
+# ExpandedRoofing [![RimWorld 1.1](https://img.shields.io/badge/RimWorld-1.0-green.svg?longCache=true&style=plastic)](http://rimworldgame.com/)
 
 Adds customizable roofing, with transparent greenhouse roofing and photovoltaic solar roofing. Reworked from Vendan's original idea.
 
