@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 using Verse;
 using Verse.AI;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 
 namespace ExpandedRoofing
 {
@@ -40,18 +40,22 @@ namespace ExpandedRoofing
         static FixFinishFrameBuildOrder()
         {
 #if DEBUG
-            HarmonyInstance.DEBUG = true;
+            Harmony.DEBUG = true;
+            Log.Message("FixFinishFrameBuildOrder");
 #endif
-            HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.fixbuildorder");
+            Harmony harmony = new Harmony("rimworld.whyisthat.expandedroofing.fixbuildorder");
 
             harmony.Patch(AccessTools.Method(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage)), null, null, new HarmonyMethod(typeof(FixFinishFrameBuildOrder), nameof(Transpiler)));
+#if DEBUG
+            Harmony.DEBUG = false;
+#endif
         }
 
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             foreach (CodeInstruction instruction in instructions)
             {
-                if (instruction.opcode == OpCodes.Call && instruction.operand == MI_ClosestThingReachable)
+                if (instruction.opcode == OpCodes.Call && (MethodInfo)instruction.operand == MI_ClosestThingReachable)
                     yield return new CodeInstruction(OpCodes.Call, MI_ClosestThingReachableWrapper);
                 else
                     yield return instruction;

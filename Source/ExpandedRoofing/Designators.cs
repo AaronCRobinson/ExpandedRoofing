@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Verse;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace ExpandedRoofing
@@ -113,7 +113,7 @@ namespace ExpandedRoofing
             //this.hotKey = KeyBindingDefOf.Misc5;
             this.soundDragSustain = SoundDefOf.Designate_DragAreaAdd;
             this.soundDragChanged = null;
-            this.soundSucceeded = SoundDefOf.Designate_AreaAdd;
+            this.soundSucceeded = SoundDefOf.Designate_ZoneAdd;
             this.useMouseIcon = true;
         }
 

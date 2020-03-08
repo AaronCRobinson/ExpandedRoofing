@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
-using Harmony;
+using HarmonyLib;
 
 namespace ExpandedRoofing
 {
@@ -13,11 +13,15 @@ namespace ExpandedRoofing
         static RoofMaintenance_Patches()
         {
 #if DEBUG
-            HarmonyInstance.DEBUG = true;
+            Harmony.DEBUG = true;
+            Log.Message("RoofMaintenance_Patches");
 #endif
-            HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.roofmaintenance");
+            Harmony harmony = new Harmony("rimworld.whyisthat.expandedroofing.roofmaintenance");
 
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), null, null, new HarmonyMethod(typeof(RoofMaintenance_Patches), nameof(SetRoofTranspiler)));
+#if DEBUG
+            Harmony.DEBUG = false;
+#endif
         }
 
         public static IEnumerable<CodeInstruction> SetRoofTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -27,7 +31,7 @@ namespace ExpandedRoofing
             int i;
             for (i = 0; i < instructionsList.Count - 1; i++)
             {
-                if (instructionsList[i].opcode == OpCodes.Bne_Un)
+                if (instructionsList[i].opcode == OpCodes.Bne_Un_S)
                 {
                     yield return instructionsList[i++];
                     yield return instructionsList[i++];

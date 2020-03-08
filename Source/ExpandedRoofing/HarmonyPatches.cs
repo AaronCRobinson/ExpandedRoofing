@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 
 namespace ExpandedRoofing
 {
@@ -88,26 +88,44 @@ namespace ExpandedRoofing
         static HarmonyPatches()
         {
 #if DEBUG
-            HarmonyInstance.DEBUG = true;
+            Harmony.DEBUG = true;
 #endif
-            HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.main");
+            Harmony harmony = new Harmony("rimworld.whyisthat.expandedroofing.main");
 
             // correct lighting for plant growth
+#if DEBUG
+            Log.Message("correct lighting for plant growth");
+#endif
             harmony.Patch(AccessTools.Method(typeof(GlowGrid), nameof(GlowGrid.GameGlowAt)), null, null, new HarmonyMethod(typeof(HarmonyPatches).GetMethod(nameof(PlantLightingFix))));
 
             // set roof to return materials
+#if DEBUG
+            Log.Message("set roof to return materials");
+#endif
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofLeavings)), null);
 
             // fix lighting inside rooms with transparent roof  
+#if DEBUG
+            Log.Message("fix lighting inside rooms with transparent roof");
+#endif
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
 
             // Fix infestation under buildable thick roofs
+#if DEBUG
+            Log.Message("Fix infestation under buildable thick roofs");
+#endif
             harmony.Patch(AccessTools.Method(typeof(InfestationCellFinder), "GetScoreAt"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(ThickRoofInfestationFix)));
 
             // Reset CompMaintainable when building repaired
+#if DEBUG
+            Log.Message("Reset CompMaintainable when building repaired");
+#endif
             harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
 
             // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
+#if DEBUG
+            Log.Message("Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)");
+#endif
             harmony.Patch(AccessTools.Method(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(FixClearBuildingArea)));
 
             harmony.Patch(AccessTools.Property(typeof(CompPowerPlantSolar), "RoofedPowerOutputFactor").GetGetMethod(true), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofOutputFactorFix)));
@@ -115,7 +133,7 @@ namespace ExpandedRoofing
             // NOTE: look for a better injection point
             harmony.Patch(AccessTools.Method(typeof(Game), nameof(Game.FinalizeInit)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(GameInited)));
 #if DEBUG
-            HarmonyInstance.DEBUG = false;
+            Harmony.DEBUG = false;
 #endif
         }
 
@@ -178,9 +196,6 @@ namespace ExpandedRoofing
                 yield return instructionList[i];
                 if (instructionList[i].opcode == OpCodes.Stloc_S && instructionList[i].operand is LocalBuilder lb && lb.LocalIndex == SectionLayer_LightingOverlay__Regenerate__RoofDef__LocalIndex)
                 {
-#if DEBUG
-                    Log.Message("Patching TransparentRoof");
-#endif
                     // make sure state by checking ops a few times
                     yield return instructionList[++i];
                     if (instructionList[i].opcode != OpCodes.Ldloc_S) break;
@@ -188,12 +203,14 @@ namespace ExpandedRoofing
                     CodeInstruction load = new CodeInstruction(instructionList[i].opcode, instructionList[i].operand);
 
                     yield return instructionList[++i];
-                    if (instructionList[i].opcode != OpCodes.Brfalse) break;
-
+                    if (instructionList[i].opcode != OpCodes.Brfalse_S) break;
+#if DEBUG
+                    Log.Message("Patching TransparentRoof");
+#endif
                     yield return load;
                     yield return new CodeInstruction(OpCodes.Call, MI_SkipRoofRendering);
                     Label @continue = il.DefineLabel();
-                    yield return new CodeInstruction(OpCodes.Brtrue, @continue);
+                    yield return new CodeInstruction(OpCodes.Brtrue_S, @continue);
                     while (instructionList[++i].opcode != OpCodes.Stloc_S) { yield return instructionList[i]; } // yield block
                     yield return instructionList[i++];
                     instructionList[i].labels.Add(@continue);
@@ -242,7 +259,7 @@ namespace ExpandedRoofing
             int j;
             int insertIndex = 0, startIndex = 0, endIndex = 0 ;
 #if DEBUG
-                    Log.Message($"instructions.Count -> {instructionList.Count}");
+            Log.Message($"instructions.Count -> {instructionList.Count}");
 #endif 
             for (int i = 0; i < instructionList.Count; i++)
             {
@@ -258,7 +275,7 @@ namespace ExpandedRoofing
                     Log.Message($"startIndex: {startIndex}");
 #endif 
                     j = i;
-                    while (instructionList[j++].opcode != OpCodes.Ble_Un) continue;
+                    while (instructionList[j++].opcode != OpCodes.Ble_Un_S) continue;
                     j = j+4; // values and returns
                     // keep going...
                     while (instructionList[j++].opcode != OpCodes.Ldloc_0) continue;
@@ -267,7 +284,7 @@ namespace ExpandedRoofing
                     Log.Message($"endIndex: {endIndex}");
 #endif 
                 }
-                if (insertIndex == 0 && instructionList[i].opcode == OpCodes.Stloc_2)
+                if (insertIndex == 0 && instructionList[i].opcode == OpCodes.Stloc_1) // entityDefToBuild
                 {
 #if DEBUG
                     Log.Message($"Setting -> insertIndex @ {i}");

@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 using System.Reflection;
 using UnityEngine;
 using Verse;
-using Harmony;
+using HarmonyLib;
 
 namespace ExpandedRoofing
 {
@@ -18,12 +18,16 @@ namespace ExpandedRoofing
         static RoofGridCellBoolGiver()
         {
 #if DEBUG
-            HarmonyInstance.DEBUG = true;
+            Harmony.DEBUG = true;
+            Log.Message("RoofGridCellBoolGiver");
 #endif
-            HarmonyInstance harmony = HarmonyInstance.Create("rimworld.whyisthat.expandedroofing.roofgridcellboolgiver");
+            Harmony harmony = new Harmony("rimworld.whyisthat.expandedroofing.roofgridcellboolgiver");
             // Customize RoofGrid ICellBoolGiver
             harmony.Patch(AccessTools.Property(typeof(RoofGrid), nameof(RoofGrid.Color)).GetGetMethod(), new HarmonyMethod(typeof(RoofGridCellBoolGiver), nameof(RoofGridColorDetour)), null);
             harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.GetCellExtraColor)), null, null, new HarmonyMethod(typeof(RoofGridCellBoolGiver).GetMethod(nameof(RoofGridCellBoolGiver.RoofGridExtraColorDetour))));
+#if DEBUG
+            Harmony.DEBUG = false;
+#endif
         }
 
         public static bool RoofGridColorDetour(RoofGrid __instance, ref Color __result)
