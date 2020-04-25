@@ -10,7 +10,7 @@ using HarmonyLib;
 namespace ExpandedRoofing
 {
 
-    static class TraspileHelper
+    static class TranspileHelper
     {
         public static bool CheckTransparency(GlowGrid gg, Map map, IntVec3 c, ref float num)
         {
@@ -65,6 +65,14 @@ namespace ExpandedRoofing
 
         public static bool SkipRoofRendering(RoofDef roofDef) => (roofDef == RoofDefOf.RoofTransparent);
 
+        /*public static bool GridsUtilityRoofedFix(IntVec3 c, Map map)
+        {
+            RoofDef roofDef = map.roofGrid.RoofAt(c);
+            if (roofDef != null && roofDef != RoofDefOf.RoofTransparent)
+                return true;
+            return false;
+        }*/
+
         // NOTE: do not need to check if `isThickRoof` b\c we already know it is
         // TODO: look at consolidating this method
         public static bool IsBuildableThickRoof(IntVec3 cell, Map map) => (cell.GetRoof(map) != RimWorld.RoofDefOf.RoofRockThick);
@@ -82,6 +90,7 @@ namespace ExpandedRoofing
     internal class HarmonyPatches
     {
         public static FieldInfo FI_RoofGrid_map = AccessTools.Field(typeof(RoofGrid), "map");
+        public static FieldInfo FI_RoofGrid_roofGrid = AccessTools.Field(typeof(RoofDef[]), "roofGrid");
 
         private static int SectionLayer_LightingOverlay__Regenerate__RoofDef__LocalIndex = AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)).GetMethodBody().LocalVariables.First(lvi => lvi.LocalType == typeof(RoofDef)).LocalIndex;
 
@@ -102,13 +111,17 @@ namespace ExpandedRoofing
 #if DEBUG
             Log.Message("set roof to return materials");
 #endif
-            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(RoofLeavings)), null);
+            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof)), new HarmonyMethod(typeof(HarmonyPatches), nameof(SetRoof_Prefix)), null);
 
             // fix lighting inside rooms with transparent roof  
 #if DEBUG
             Log.Message("fix lighting inside rooms with transparent roof");
 #endif
             harmony.Patch(AccessTools.Method(typeof(SectionLayer_LightingOverlay), nameof(SectionLayer_LightingOverlay.Regenerate)), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofLightingOverlayFix)));
+
+            //harmony.Patch(AccessTools.Method(AccessTools.TypeByName("SectionLayer_IndoorMask"), "Regenerate"), null, null, new HarmonyMethod(typeof(HarmonyPatches), nameof(TransparentRoofIndoorMaskFix)));
+
+            harmony.Patch(AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.Roofed), new Type[] { typeof(int) }), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(Roofed_Postfix)));
 
             // Fix infestation under buildable thick roofs
 #if DEBUG
@@ -120,7 +133,7 @@ namespace ExpandedRoofing
 #if DEBUG
             Log.Message("Reset CompMaintainable when building repaired");
 #endif
-            harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepairedPostfix)));
+            harmony.Patch(AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.Notify_BuildingRepaired)), null, new HarmonyMethod(typeof(HarmonyPatches), nameof(BuildingRepaired_Postfix)));
 
             // Set clearBuildingArea flag in BlocksConstruction to be respected before large plant check (trees mostly)
 #if DEBUG
@@ -140,7 +153,7 @@ namespace ExpandedRoofing
         public static IEnumerable<CodeInstruction> PlantLightingFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             FieldInfo FI_GlowGrid_map = AccessTools.Field(typeof(GlowGrid), "map");
-            MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.CheckTransparency));
+            MethodInfo MI_CheckTransparency = AccessTools.Method(typeof(TranspileHelper), nameof(TranspileHelper.CheckTransparency));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             int i;
@@ -166,16 +179,31 @@ namespace ExpandedRoofing
             for (i += 1; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
         }
 
-        // NOTE: solar roofing methods piggy back on RoofLeavings method
-        public static void RoofLeavings(RoofGrid __instance, IntVec3 c, RoofDef def)
+        public static bool SetRoof_Prefix(RoofGrid __instance, RoofDef[] ___roofGrid, IntVec3 c, RoofDef def)
         {
             RoofDef curRoof = __instance.RoofAt(c);
             Map map = FI_RoofGrid_map.GetValue(__instance) as Map;
-            if (curRoof != null && def != curRoof)
+
+            if (curRoof == def) return false;
+
+            // handle lighting special case
+            if (def == RoofDefOf.RoofTransparent)
+            {
+                Log.Message("Transparent roof being set");
+                if (curRoof != null)
+                    __instance.SetRoof(c, null);
+                //RoofDef[] roofGrid = FI_RoofGrid_roofGrid.GetValue(__instance) as RoofDef[];
+                Log.Message(___roofGrid.ToString());
+                ___roofGrid[map.cellIndices.CellToIndex(c)] = def; // set roof
+                return false;
+            }
+
+            // handle roof leavings
+            if (curRoof != null)
             {
                 RoofExtension roofExt = curRoof.GetModExtension<RoofExtension>();
                 if (roofExt != null)
-                    TraspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
+                    TranspileHelper.DoLeavings(curRoof, roofExt.spawnerDef, map, GenAdj.OccupiedRect(c, Rot4.North, roofExt.spawnerDef.size));
 
                 if (curRoof == RoofDefOf.RoofSolar) // removing solar roofing
                     map.GetComponent<SolarRoofing_MapComponent>().tracker.RemoveSolarCell(c);
@@ -183,12 +211,14 @@ namespace ExpandedRoofing
 
             if (def == RoofDefOf.RoofSolar) // adding solar roofing
                 map.GetComponent<SolarRoofing_MapComponent>().tracker.AddSolarCell(c);
+
+            return true;
         }
 
         public static IEnumerable<CodeInstruction> TransparentRoofLightingOverlayFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
-            MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
-            MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.SkipRoofRendering));
+            //MethodInfo MI_RoofAt = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.RoofAt), new[] { typeof(int), typeof(int) });
+            MethodInfo MI_SkipRoofRendering = AccessTools.Method(typeof(TranspileHelper), nameof(TranspileHelper.SkipRoofRendering));
 
             List<CodeInstruction> instructionList = instructions.ToList();
             for (int i = 0; i < instructionList.Count; i++)
@@ -209,9 +239,31 @@ namespace ExpandedRoofing
 #endif
                     yield return load;
                     yield return new CodeInstruction(OpCodes.Call, MI_SkipRoofRendering);
+
                     Label @continue = il.DefineLabel();
                     yield return new CodeInstruction(OpCodes.Brtrue_S, @continue);
+
+
+                    //int start = ++i;
+                    
+                    
+                    //for (int j = 0; j < 3; j++) // eat three blocks (uhm! cookie!)
                     while (instructionList[++i].opcode != OpCodes.Stloc_S) { yield return instructionList[i]; } // yield block
+
+
+                    /*while (instructionList[++i].opcode != OpCodes.Stloc_S) { } // look for label
+                    while (instructionList[++i].opcode != OpCodes.Brtrue_S) { } // look for label
+
+                    Label l = (Label)instructionList[i].operand;
+
+                    int end = i;
+
+                    yield return new CodeInstruction(OpCodes.Brtrue_S, l);
+                    for (int j = start; j < end; j++)
+                    {
+                        yield return instructionList[j];
+                    }*/
+
                     yield return instructionList[i++];
                     instructionList[i].labels.Add(@continue);
                     yield return instructionList[i];
@@ -219,9 +271,37 @@ namespace ExpandedRoofing
             }
         }
 
+        /*public static IEnumerable<CodeInstruction> TransparentRoofIndoorMaskFix(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo MI_Roofed = AccessTools.Method(typeof(GridsUtility), nameof(GridsUtility.Roofed));
+            MethodInfo MI_GridsUtilityRoofedFix = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.GridsUtilityRoofedFix));
+
+            List<CodeInstruction> instructionList = instructions.ToList();
+            int i;
+            for (i = 0; i < instructionList.Count; i++)
+            {
+                if (instructionList[i].opcode == OpCodes.Call && instructionList[i].operand is MethodInfo mi && mi == MI_Roofed)
+                {
+                    Log.Message("Patching SectionLayer_IndoorMask");
+                    yield return new CodeInstruction(OpCodes.Call, MI_GridsUtilityRoofedFix);
+                }
+                else
+                    yield return instructionList[i];
+
+            }
+            for (i += 1; i < instructionList.Count; i++) yield return instructionList[i]; // finish off instructions
+        }*/
+
+
+        public static void Roofed_Postfix(RoofGrid __instance, ref bool __result, int index)
+        {
+            if (__instance.RoofAt(index) == RoofDefOf.RoofTransparent)
+                __result = false;
+        }
+
         public static IEnumerable<CodeInstruction> ThickRoofInfestationFix(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
-            MethodInfo MI_IsBuildableThickroof = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.IsBuildableThickRoof));
+            MethodInfo MI_IsBuildableThickroof = AccessTools.Method(typeof(TranspileHelper), nameof(TranspileHelper.IsBuildableThickRoof));
             List<CodeInstruction> instructionList = instructions.ToList();
             int i;
             for (i = 0; i < instructionList.Count - 2; i++)
@@ -244,7 +324,7 @@ namespace ExpandedRoofing
                 yield return instructionList[i];
         }
         
-        public static void BuildingRepairedPostfix(Building b)
+        public static void BuildingRepaired_Postfix(Building b)
         {
             CompMaintainable comp = b.GetComp<CompMaintainable>();
             if (comp != null)
@@ -320,7 +400,7 @@ namespace ExpandedRoofing
 
         public static IEnumerable<CodeInstruction> TransparentRoofOutputFactorFix(IEnumerable<CodeInstruction> instructions)
         {
-            MethodInfo MI_FixRoofedPowerOutputFactor = AccessTools.Method(typeof(TraspileHelper), nameof(TraspileHelper.FixRoofedPowerOutputFactor));
+            MethodInfo MI_FixRoofedPowerOutputFactor = AccessTools.Method(typeof(TranspileHelper), nameof(TranspileHelper.FixRoofedPowerOutputFactor));
             List<CodeInstruction> instructionList = instructions.ToList();
             bool skipping = false;
             for (int i = 0; i < instructionList.Count; i++)
